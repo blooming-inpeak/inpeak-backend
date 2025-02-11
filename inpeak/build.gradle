@@ -13,35 +13,70 @@ java {
     }
 }
 
+// Gradle 설정 그룹 정의
 configurations {
     compileOnly {
-        extendsFrom annotationProcessor
+        extendsFrom annotationProcessor  // Lombok 등의 애노테이션 프로세서 설정
+    }
+    mockitoAgent {
+        transitive = false  // Mockito 에이전트의 전이적 의존성 비활성화
     }
 }
 
+// 의존성을 가져올 저장소 설정
 repositories {
-    mavenCentral()
+    mavenCentral()  // Maven Central Repository 사용
 }
 
 dependencies {
+    // Spring Boot 핵심 의존성
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // 개발 도구 및 유틸리티
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
-    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'  // 롬복 애노테이션 처리
+
+    // 테스트 관련 의존성
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    // 데이터베이스 관련 의존성
     runtimeOnly 'com.mysql:mysql-connector-j'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    // Embedded Redis (테스트 환경에서만 사용)
-    testImplementation 'it.ozimov:embedded-redis:0.7.3'
+
+    // 테스트용 임베디드 데이터베이스
+    testImplementation 'com.github.codemonstur:embedded-redis:1.4.3'  // 테스트용 Redis
+    testRuntimeOnly 'com.h2database:h2'  // 테스트용 H2 데이터베이스
+
+    // Mockito 테스트 프레임워크 설정
+    mockitoAgent ("org.mockito:mockito-core:5.14.2") {
+        transitive = false  // 에이전트용 의존성 전이 비활성화
+    }
+    testImplementation "org.mockito:mockito-core:5.14.2"  // 테스트용 Mockito 코어
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
+// 테스트 태스크 설정
+tasks.named('test', Test) {
+    useJUnitPlatform()  // JUnit 5 사용
+
+    // JVM 인자 설정
+    jvmArgs = [
+            '--enable-preview',  // 프리뷰 기능 활성화
+            '--add-opens=java.base/java.lang=ALL-UNNAMED',  // 모듈 접근 허용
+            '--add-opens=java.base/java.io=ALL-UNNAMED',
+            '--add-opens=java.base/java.util=ALL-UNNAMED',
+            '-XX:+EnableDynamicAgentLoading',  // 동적 에이전트 로딩 활성화
+            '-Xshare:off'  // 공유 클래스 캐시 비활성화
+    ]
+
+    // 테스트 실행 전 Mockito 에이전트 설정
+    doFirst {
+        jvmArgs += "-javaagent:${configurations.mockitoAgent.singleFile}"  // Mockito 에이전트 추가
+    }
 }

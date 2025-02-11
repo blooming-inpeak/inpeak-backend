@@ -49,7 +49,7 @@ spring:
       on-profile: test
 
   datasource:
-    url: jdbc:h2:mem:/inpeak-db
+    url: jdbc:h2:mem:inpeak-db
     username: sa
     password:
 
