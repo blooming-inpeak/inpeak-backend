@@ -2,6 +2,7 @@ package com.blooming.inpeak;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.blooming.inpeak.support.IntegrationTestSupport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
