@@ -11,24 +11,38 @@ import redis.embedded.core.RedisServerBuilder;
 @TestConfiguration
 public class TestRedisConfiguration {
 
-    private final RedisServer redisServer;
+    private static RedisServer redisServer;
+    private static boolean isRunning = false;
+
+    private final int redisPort;
 
     public TestRedisConfiguration(
-        @Value("${spring.data.redis.port}") int redisPort) throws IOException {
-        this.redisServer = new RedisServerBuilder()
-            .port(redisPort)
-            .setting("maxmemory 128M")
-            .setting("maxmemory-policy allkeys-lru")
-            .build();
+        @Value("${spring.data.redis.port}") int redisPort
+    ) throws IOException {
+        this.redisPort = redisPort;
     }
 
     @PostConstruct
-    public void postConstruct() throws IOException {
-        redisServer.start();
+    public void startRedis() throws IOException {
+        if (redisServer == null) {
+            redisServer = new RedisServerBuilder()
+                .port(redisPort)
+                .setting("maxmemory 128M")
+                .setting("maxmemory-policy allkeys-lru")
+                .build();
+        }
+
+        if (!isRunning) {
+            redisServer.start();
+            isRunning = true;
+        }
     }
 
     @PreDestroy
-    public void preDestroy() throws IOException {
-        redisServer.stop();
+    public void stopRedis() throws IOException {
+        if (redisServer != null && isRunning) {
+            redisServer.stop();
+            isRunning = false;
+        }
     }
 }
