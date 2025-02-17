@@ -4,7 +4,7 @@ import com.blooming.inpeak.answer.domain.Answer;
 import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.answer.domain.QAnswer;
 import com.blooming.inpeak.interview.domain.QInterview;
-import com.blooming.inpeak.answer.domain.QQuestion;
+import com.blooming.inpeak.question.domain.QQuestion;
 import com.blooming.inpeak.member.domain.Member;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;

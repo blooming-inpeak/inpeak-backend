@@ -2,6 +2,7 @@ package com.blooming.inpeak.answer.domain;
 
 import com.blooming.inpeak.common.base.BaseEntity;
 import com.blooming.inpeak.interview.domain.Interview;
+import com.blooming.inpeak.question.domain.Question;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -23,6 +24,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "answers")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Answer extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

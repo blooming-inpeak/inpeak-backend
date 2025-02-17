@@ -8,7 +8,7 @@ import lombok.Builder;
 @Builder
 public record AnswerResponse(
     LocalDate dateTime,
-    String questionTitle,
+    String questionContent,
     Long runningTime,
     AnswerStatus answerStatus,
     boolean isUnderstood
@@ -16,7 +16,7 @@ public record AnswerResponse(
     public static AnswerResponse from (Answer answer) {
         return AnswerResponse.builder()
             .dateTime(answer.getInterview().getStartDate())  // 답변 작성 시간
-            .questionTitle(answer.getQuestion().getTitle())  // 질문 제목
+            .questionContent(answer.getQuestion().getContent())  // 질문 제목
             .runningTime(answer.getRunningTime())  // 실행 시간
             .answerStatus(answer.getStatus())  // 답변 상태
             .isUnderstood(answer.isUnderstood())  // 이해 여부

@@ -2,7 +2,6 @@ package com.blooming.inpeak.answer.domain;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.blooming.inpeak.member.domain.Member;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
