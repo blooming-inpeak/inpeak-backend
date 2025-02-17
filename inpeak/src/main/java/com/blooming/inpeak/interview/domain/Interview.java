@@ -14,8 +14,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name="interviews")
+@Table(name = "interviews")
 public class Interview extends AuditingFields {
+
     @Id
     private Long id;
 
@@ -34,8 +35,8 @@ public class Interview extends AuditingFields {
 
     public static Interview of(Long memberId, LocalDate startDate) {
         return Interview.builder()
-                .memberId(memberId)
-                .startDate(startDate)
-                .build();
+            .memberId(memberId)
+            .startDate(startDate)
+            .build();
     }
 }
