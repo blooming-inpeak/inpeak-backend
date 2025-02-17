@@ -15,7 +15,7 @@ public record AnswerFilterRequest(
 ) {
     public AnswerFilterCommand toCommand(Member member) {
         return AnswerFilterCommand.builder()
-            .member(member)
+            .memberId(member.getId())
             .isUnderstood(isUnderstood)
             .sortType(sortType)
             .page(page)

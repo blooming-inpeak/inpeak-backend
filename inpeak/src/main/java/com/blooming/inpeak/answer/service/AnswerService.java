@@ -6,7 +6,6 @@ import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
-import com.blooming.inpeak.member.domain.Member;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -23,12 +22,12 @@ public class AnswerService {
     /**
      * 답변을 스킵하는 메서드
      *
-     * @param member 사용자 정보
+     * @param memberId 사용자 ID
      * @param questionId 답변 ID
      * @param interviewId 인터뷰 ID
      */
-    public void skipAnswer(Member member, Long questionId, Long interviewId) {
-        Answer skippedAnswer = Answer.ofSkipped(member.getId(), questionId, interviewId);
+    public void skipAnswer(Long memberId, Long questionId, Long interviewId) {
+        Answer skippedAnswer = Answer.ofSkipped(memberId, questionId, interviewId);
         answerRepository.save(skippedAnswer);
     }
 
@@ -43,7 +42,7 @@ public class AnswerService {
 
         Slice<Answer> results = answerRepositoryCustom
             .findCorrectAnswerList(
-                command.member(),
+                command.memberId(),
                 command.isUnderstood(),
                 command.sortType(),
                 pageable

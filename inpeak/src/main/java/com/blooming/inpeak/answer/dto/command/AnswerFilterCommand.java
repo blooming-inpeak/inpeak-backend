@@ -7,7 +7,7 @@ import lombok.Builder;
 
 @Builder
 public record AnswerFilterCommand(
-    Member member,
+    Long memberId,
 
     String sortType,
 

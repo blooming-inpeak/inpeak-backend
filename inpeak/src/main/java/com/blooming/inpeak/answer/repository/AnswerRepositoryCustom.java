@@ -25,14 +25,14 @@ public class AnswerRepositoryCustom {
     /**
      * 정답 답변 리스트를 동적으로 조회하는 메서드
      *
-     * @param member 사용자 객체
+     * @param memberId 사용자 Id
      * @param isUnderstood 이해 여부
      * @param sortType 정렬 조건
      * @param pageable 페이징 정보
      * @return question, interview까지 페치 조인하여 전체 답변 리스트를 반환
      */
     public Slice<Answer> findCorrectAnswerList (
-        Member member,
+        Long memberId,
         boolean isUnderstood,
         String sortType,
         Pageable pageable
@@ -46,7 +46,7 @@ public class AnswerRepositoryCustom {
             ? answer.isUnderstood.eq(true) : null;
 
         // member 조건 추가
-        BooleanExpression memberFilter = answer.memberId.eq(member.getId());
+        BooleanExpression memberFilter = answer.memberId.eq(memberId);
 
         // AnswerStatus가 CORRECT인 조건 추가
         BooleanExpression statusFilter = answer.status.eq(AnswerStatus.CORRECT);

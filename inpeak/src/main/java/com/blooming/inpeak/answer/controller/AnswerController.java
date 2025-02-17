@@ -28,7 +28,7 @@ public class AnswerController {
         @AuthenticationPrincipal Member member,
         @RequestBody AnswerSkipRequest request
     ) {
-        answerService.skipAnswer(member, request.questionId(), request.interviewId());
+        answerService.skipAnswer(member.getId(), request.questionId(), request.interviewId());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
