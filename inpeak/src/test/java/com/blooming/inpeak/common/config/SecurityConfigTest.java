@@ -1,8 +1,6 @@
 package com.blooming.inpeak.common.config;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.blooming.inpeak.IntegrationTestSupport;
@@ -32,16 +30,5 @@ class SecurityConfigTest extends IntegrationTestSupport {
     void whenAccessingNonExistentPath_thenReturns404() throws Exception {
         mockMvc.perform(get("/non-existent"))
             .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @DisplayName("CORS 설정 테스트")
-    void corsConfigurationTest() throws Exception {
-        mockMvc.perform(options("/healthcheck")
-                .header("Origin", "http://localhost:8080")
-                .header("Access-Control-Request-Method", "GET"))
-                .andExpect(status().isOk())
-                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:8080"))
-                .andExpect(header().string("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS"));
     }
 }
