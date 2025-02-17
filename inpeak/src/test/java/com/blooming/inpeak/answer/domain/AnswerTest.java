@@ -12,17 +12,17 @@ class AnswerTest {
     @Test
     void ofSkipped() {
         //given
-        Member member = new Member(1L);
+        Long memberId = 1L;
         Long questionId = 100L;
         Long interviewId = 200L;
 
         //when
-        Answer skippedAnswer = Answer.ofSkipped(member, questionId, interviewId);
+        Answer skippedAnswer = Answer.ofSkipped(memberId, questionId, interviewId);
 
         //then
         assertNotNull(skippedAnswer);
         assertEquals(questionId, skippedAnswer.getQuestionId());
-        assertEquals(member.getId(), skippedAnswer.getMemberId());
+        assertEquals(memberId, skippedAnswer.getMemberId());
         assertEquals(interviewId, skippedAnswer.getInterviewId());
         assertEquals(AnswerStatus.SKIPPED, skippedAnswer.getStatus()); // 스킵된 상태 설정
     }

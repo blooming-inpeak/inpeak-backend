@@ -28,7 +28,7 @@ public class AnswerService {
      * @param interviewId 인터뷰 ID
      */
     public void skipAnswer(Member member, Long questionId, Long interviewId) {
-        Answer skippedAnswer = Answer.ofSkipped(member, questionId, interviewId);
+        Answer skippedAnswer = Answer.ofSkipped(member.getId(), questionId, interviewId);
         answerRepository.save(skippedAnswer);
     }
 

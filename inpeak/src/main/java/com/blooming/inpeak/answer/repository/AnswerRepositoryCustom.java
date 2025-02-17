@@ -3,7 +3,7 @@ package com.blooming.inpeak.answer.repository;
 import com.blooming.inpeak.answer.domain.Answer;
 import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.answer.domain.QAnswer;
-import com.blooming.inpeak.answer.domain.QInterview;
+import com.blooming.inpeak.interview.domain.QInterview;
 import com.blooming.inpeak.answer.domain.QQuestion;
 import com.blooming.inpeak.member.domain.Member;
 import com.querydsl.core.types.OrderSpecifier;

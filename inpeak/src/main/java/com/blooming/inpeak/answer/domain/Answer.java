@@ -1,7 +1,7 @@
 package com.blooming.inpeak.answer.domain;
 
-import com.blooming.inpeak.common.base.AuditingFields;
-import com.blooming.inpeak.member.domain.Member;
+import com.blooming.inpeak.common.base.BaseEntity;
+import com.blooming.inpeak.interview.domain.Interview;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "answers")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Answer extends AuditingFields {
+public class Answer extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -76,12 +76,13 @@ public class Answer extends AuditingFields {
     }
 
     // 스킵된 답변 생성
-    public static Answer ofSkipped(Member member, Long questionId, Long interviewId) {
+    public static Answer ofSkipped(Long memberId, Long questionId, Long interviewId) {
         return Answer.builder()
             .questionId(questionId)
-            .memberId(member.getId())
+            .memberId(memberId)
             .interviewId(interviewId)
             .status(AnswerStatus.SKIPPED) // 스킵된 상태 설정
+            .isUnderstood(false) // 이해하지 못한 상태로 설정
             .build();
     }
 }

@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.Collection;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -35,9 +36,19 @@ public class Member implements UserDetails {
     @Column
     private Long correctAnswerCount;
 
-    // 테스트용 임시 생성자. 나중에 생성자 만들때 삭제하셔도 됩니다.
-    public Member (Long id) {
-        this.id = id;
+    @Builder
+    private Member(String nickName, String accessToken) {
+        this.nickName = nickName;
+        this.accessToken = accessToken;
+        this.totalQuestionCount = 0L;
+        this.correctAnswerCount = 0L;
+    }
+
+    public static Member of(String nickName, String accessToken) {
+        return Member.builder()
+            .nickName(nickName)
+            .accessToken(accessToken)
+            .build();
     }
 
     @Override
