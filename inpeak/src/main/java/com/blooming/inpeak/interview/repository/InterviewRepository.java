@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface InterviewRepository extends JpaRepository<Interview, Long> {
 
     long countByMemberId(Long memberId);
+
+    boolean existsByMemberIdAndStartDate(Long memberId, LocalDate startDate);
 }

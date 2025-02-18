@@ -1,7 +1,9 @@
 package com.blooming.inpeak.interview.service;
 
-import com.blooming.inpeak.interview.dto.response.InterviewTotalCountResponse;
+import com.blooming.inpeak.interview.dto.response.RemainingInterviewsResponse;
+import com.blooming.inpeak.interview.dto.response.TotalInterviewsResponse;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +13,25 @@ public class InterviewService {
 
     private final InterviewRepository interviewRepository;
 
-    public InterviewTotalCountResponse getTotalInterviewCount(Long memberId) {
-        return InterviewTotalCountResponse.of(interviewRepository.countByMemberId(memberId));
+    /**
+     * 사용자의 총 인터뷰 횟수를 가져오는 메서드
+     *
+     * @param memberId 사용자 ID
+     * @return 총 인터뷰 횟수
+     */
+    public TotalInterviewsResponse getTotalInterviews(Long memberId) {
+        return TotalInterviewsResponse.of(interviewRepository.countByMemberId(memberId));
+    }
+
+    /**
+     * 사용자의 남은 모의면접 횟수를 가져오는 메서드
+     *
+     * @param memberId 사용자 ID
+     * @return 모의면접 잔여 횟수
+     */
+    public RemainingInterviewsResponse getRemainingInterviews(Long memberId) {
+        LocalDate today = LocalDate.now();
+        boolean exists = interviewRepository.existsByMemberIdAndStartDate(memberId, today);
+        return RemainingInterviewsResponse.of(exists ? 0 : 1);
     }
 }
