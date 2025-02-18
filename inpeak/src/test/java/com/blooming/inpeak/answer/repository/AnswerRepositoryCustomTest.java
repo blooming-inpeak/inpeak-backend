@@ -5,9 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.blooming.inpeak.answer.domain.Answer;
 import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.interview.domain.Interview;
-import com.blooming.inpeak.question.domain.Question;
-import com.blooming.inpeak.question.domain.QuestionType;
-import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
+import com.blooming.inpeak.question.domain.*;
 import com.blooming.inpeak.common.config.queryDSL.QuerydslConfig;
 import com.blooming.inpeak.member.domain.Member;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -17,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -25,6 +22,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @DataJpaTest
@@ -46,77 +44,93 @@ class AnswerRepositoryCustomTest {
     void setUp() {
         answerRepositoryCustom = new AnswerRepositoryCustom(queryFactory);
 
-        testMember = entityManager.persist(Member.of("testUser", "testAccessToken"));
+        testMember = entityManager.persist(Member.of("testUser", "accessToken123"));
 
-        testQuestion = entityManager.persist(Question.of("테스트 질문", QuestionType.SPRING, "정답 예시"));
+        // QuestionType을 명시적으로 설정하여 저장
+        testQuestion = entityManager.persist(Question.of("테스트 질문", QuestionType.SPRING, "최고의 답변"));
 
+        // 인터뷰 객체 생성
         testInterview = entityManager.persist(Interview.of(testMember.getId(), LocalDate.now().minusDays(1)));
 
-        // ✅ Answer 생성
+        // 테스트 데이터 저장
         List.of(
             createAnswer("정답1", true, 120L, AnswerStatus.CORRECT),
             createAnswer("정답2", false, 200L, AnswerStatus.CORRECT),
-            createAnswer("틀린 답변", false, 150L, AnswerStatus.INCORRECT)
+            createAnswer("오답1", false, 150L, AnswerStatus.INCORRECT),
+            createAnswer("스킵된 답변", false, 100L, AnswerStatus.SKIPPED)
         ).forEach(entityManager::persist);
 
         entityManager.flush();
     }
 
-    /**
-     * Answer 객체 생성 헬퍼 메서드
-     */
+
     private Answer createAnswer(String userAnswer, boolean isUnderstood, Long runningTime, AnswerStatus status) {
         return Answer.builder()
             .questionId(testQuestion.getId())
             .memberId(testMember.getId())
             .interviewId(testInterview.getId())
             .userAnswer(userAnswer)
-            .videoURL("")
             .runningTime(runningTime)
-            .comment("")
             .isUnderstood(isUnderstood)
             .status(status)
             .build();
     }
 
     @Test
-    @DisplayName("findCorrectAnswerList()는 CORRECT 상태의 답변만 반환해야 한다.")
-    void findCorrectAnswerList_ShouldReturnOnlyCorrectAnswers() {
+    @DisplayName("findAnswers()는 정답(CORRECT) 상태의 답변만 반환해야 한다.")
+    void findAnswers_ShouldReturnOnlyCorrectAnswers() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findCorrectAnswerList(testMember.getId(), false, "DESC", pageable);
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.CORRECT, "DESC", pageable);
 
         // then
         assertNotNull(results);
-        assertEquals(2, results.getNumberOfElements()); // CORRECT 상태 2개만 반환
+        assertEquals(2, results.getNumberOfElements());
         assertTrue(results.getContent().stream().allMatch(a -> a.getStatus() == AnswerStatus.CORRECT));
     }
 
     @Test
-    @DisplayName("findCorrectAnswerList()는 isUnderstood = true일 때 이해된 답변만 반환해야 한다.")
-    void findCorrectAnswerList_ShouldReturnOnlyUnderstoodAnswers_WhenIsUnderstoodTrue() {
+    @DisplayName("findAnswers()의 ALL 조건은 INCORRECT 및 SKIPPED 상태의 답변을 반환해야 한다.")
+    void findAnswers_ShouldReturnIncorrectAndSkippedAnswers_WhenStatusIsALL() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findCorrectAnswerList(testMember.getId(), true, "DESC", pageable);
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL, "DESC", pageable);
 
         // then
         assertNotNull(results);
-        assertEquals(1, results.getNumberOfElements()); // 이해한 답변 1개만 반환
+        assertEquals(2, results.getNumberOfElements());
+        assertTrue(results.getContent().stream().allMatch(a ->
+            a.getStatus() == AnswerStatus.INCORRECT || a.getStatus() == AnswerStatus.SKIPPED
+        ));
+    }
+
+    @Test
+    @DisplayName("findAnswers()는 isUnderstood가 true일 경우 이해한 답변만 반환해야 한다.")
+    void findAnswers_ShouldReturnOnlyUnderstoodAnswers_WhenIsUnderstoodIsTrue() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), true, AnswerStatus.CORRECT, "DESC", pageable);
+
+        // then
+        assertNotNull(results);
+        assertEquals(1, results.getNumberOfElements()); // 이해한 답변은 1개
         assertTrue(results.getContent().stream().allMatch(Answer::isUnderstood));
     }
 
     @Test
-    @DisplayName("findCorrectAnswerList()는 페이지 크기보다 하나 더 조회했을 때 hasNext가 true여야 한다.")
-    void findCorrectAnswerList_ShouldSetHasNextTrue_WhenMoreThanPageSizeFetched() {
+    @DisplayName("findAnswers()는 페이지 크기보다 하나 더 조회했을 때 hasNext가 true여야 한다.")
+    void findAnswers_ShouldSetHasNextTrue_WhenMoreThanPageSizeFetched() {
         // given
-        Pageable pageable = PageRequest.of(0, 1); // 페이지 크기를 2로 설정
+        Pageable pageable = PageRequest.of(0, 1); // 페이지 크기를 1로 설정
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findCorrectAnswerList(testMember.getId(), false, "DESC", pageable);
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL, "DESC", pageable);
 
         // then
         assertNotNull(results);
@@ -125,13 +139,13 @@ class AnswerRepositoryCustomTest {
     }
 
     @Test
-    @DisplayName("findCorrectAnswerList()는 정렬 조건 DESC일 때 최신 순으로 정렬해야 한다.")
-    void findCorrectAnswerList_ShouldReturnResultsInDescendingOrder_WhenSortTypeIsDESC() {
+    @DisplayName("findAnswers()는 정렬 조건 DESC일 때 최신 순으로 정렬해야 한다.")
+    void findAnswers_ShouldReturnResultsInDescendingOrder_WhenSortTypeIsDESC() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findCorrectAnswerList(testMember.getId(), false, "DESC", pageable);
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL, "DESC", pageable);
 
         // then
         assertNotNull(results);
@@ -140,13 +154,13 @@ class AnswerRepositoryCustomTest {
     }
 
     @Test
-    @DisplayName("findCorrectAnswerList()는 정렬 조건 ASC일 때 오래된 순으로 정렬해야 한다.")
-    void findCorrectAnswerList_ShouldReturnResultsInAscendingOrder_WhenSortTypeIsASC() {
+    @DisplayName("findAnswers()는 정렬 조건 ASC일 때 오래된 순으로 정렬해야 한다.")
+    void findAnswers_ShouldReturnResultsInAscendingOrder_WhenSortTypeIsASC() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findCorrectAnswerList(testMember.getId(), false, "ASC", pageable);
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL, "ASC", pageable);
 
         // then
         assertNotNull(results);
@@ -155,14 +169,14 @@ class AnswerRepositoryCustomTest {
     }
 
     @Test
-    @DisplayName("findCorrectAnswerList()는 잘못된 정렬 타입이 입력되면 IllegalArgumentException을 발생시켜야 한다.")
-    void findCorrectAnswerList_ShouldThrowException_WhenInvalidSortTypeProvided() {
+    @DisplayName("findAnswers()는 잘못된 정렬 타입이 입력되면 IllegalArgumentException을 발생시켜야 한다.")
+    void findAnswers_ShouldThrowException_WhenInvalidSortTypeProvided() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
 
         // when & then
         assertThrows(IllegalArgumentException.class, () -> {
-            answerRepositoryCustom.findCorrectAnswerList(testMember.getId(), false, "INVALID_SORT", pageable);
+            answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL, "INVALID_SORT", pageable);
         });
     }
 }

@@ -7,6 +7,7 @@ import com.blooming.inpeak.answer.dto.response.AnswerResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
 import java.util.List;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,22 +33,24 @@ public class AnswerService {
     }
 
     /**
-     * 사용자 답변 중 정답인 데이터만 반환하는 메서드
+     * 답변을 불러오는 메서드 인자에 따라 다른 값을 불러온다.
      *
-     * @param command 사용자 정보와 검색 조건을 담은 command
-     * @return 정답인 답변을 담은 리스트와 다음 페이지가 있는 지 여부를 반환
+     * @param command 검색 조건
+     * @return 답변들과 페이징 정보
      */
-    public AnswerListResponse getCorrectAnswerList(AnswerFilterCommand command) {
+    public AnswerListResponse getAnswerList(AnswerFilterCommand command) {
         Pageable pageable = PageRequest.of(command.page(), 5);
 
-        Slice<Answer> results = answerRepositoryCustom
-            .findCorrectAnswerList(
-                command.memberId(),
-                command.isUnderstood(),
-                command.sortType(),
-                pageable
-            );
+        // 공통된 로직: 답변 리스트 가져오기
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(
+            command.memberId(),
+            command.isUnderstood(),
+            command.status(),
+            command.sortType(),
+            pageable
+        );
 
+        // 공통된 로직: DTO 변환
         List<AnswerResponse> answerResponses = results.getContent().stream()
             .map(AnswerResponse::from)
             .toList();

@@ -1,5 +1,6 @@
 package com.blooming.inpeak.answer.dto.command;
 
+import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.member.domain.Member;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -12,6 +13,8 @@ public record AnswerFilterCommand(
     String sortType,
 
     boolean isUnderstood,
+
+    AnswerStatus status,
 
     int page
 ) { }
