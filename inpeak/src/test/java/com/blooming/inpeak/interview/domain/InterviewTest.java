@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+@DisplayName("Interview domain 테스트")
 class InterviewTest {
 
     @Test
