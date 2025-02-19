@@ -13,9 +13,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AnswerService {
     private final AnswerRepository answerRepository;
     private final AnswerRepositoryCustom answerRepositoryCustom;
@@ -27,6 +29,7 @@ public class AnswerService {
      * @param questionId 답변 ID
      * @param interviewId 인터뷰 ID
      */
+    @Transactional
     public void skipAnswer(Long memberId, Long questionId, Long interviewId) {
         Answer skippedAnswer = Answer.ofSkipped(memberId, questionId, interviewId);
         answerRepository.save(skippedAnswer);
