@@ -14,13 +14,14 @@ public record CorrectAnswerFilterRequest(
     @NotNull
     int page
 ) {
-    public AnswerFilterCommand toCommand(Member member) {
+    public AnswerFilterCommand toCommand(Member member, int size) {
         return AnswerFilterCommand.builder()
             .memberId(member.getId())
             .isUnderstood(isUnderstood)
             .status(AnswerStatus.CORRECT)
             .sortType(sortType)
             .page(page)
+            .size(size)
             .build();
     }
 }

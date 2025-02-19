@@ -15,12 +15,13 @@ public record IncorrectAnswerFilterRequest(
     @NotNull
     int page
 ) {
-    public AnswerFilterCommand toCommand(Member member) {
+    public AnswerFilterCommand toCommand(Member member, int size) {
         return AnswerFilterCommand.builder()
             .memberId(member.getId())
             .status(status)
             .sortType(sortType)
             .page(page)
+            .size(size)
             .build();
     }
 }

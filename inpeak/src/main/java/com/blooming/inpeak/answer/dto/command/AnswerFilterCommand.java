@@ -16,5 +16,7 @@ public record AnswerFilterCommand(
 
     AnswerStatus status,
 
-    int page
+    int page,
+
+    int size
 ) { }

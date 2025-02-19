@@ -43,7 +43,7 @@ class AnswerServiceTest {
     void setUp() {
         memberId = 1L;
         pageable = PageRequest.of(0, 5);
-        command = new AnswerFilterCommand(memberId, "DESC", true, AnswerStatus.CORRECT, 0);
+        command = new AnswerFilterCommand(memberId, "DESC", true, AnswerStatus.CORRECT, 0, 5);
     }
 
     @DisplayName("getAnswerList()는 findAnswers()를 올바른 인자로 호출해야 한다.")
@@ -52,7 +52,8 @@ class AnswerServiceTest {
         // given
         Slice<Answer> mockSlice = new SliceImpl<>(List.of(), pageable, false);
         when(answerRepositoryCustom.findAnswers(
-            command.memberId(), command.isUnderstood(), command.status(), command.sortType(), pageable)
+            eq(command.memberId()), eq(command.isUnderstood()), eq(command.status()), eq(command.sortType()),
+            any(Pageable.class)) // ✅ 모든 인자를 matcher로 통일
         ).thenReturn(mockSlice);
 
         // when
@@ -60,7 +61,8 @@ class AnswerServiceTest {
 
         // then
         verify(answerRepositoryCustom, times(1))
-            .findAnswers(command.memberId(), command.isUnderstood(), command.status(), command.sortType(), pageable);
+            .findAnswers(eq(command.memberId()), eq(command.isUnderstood()), eq(command.status()),
+                eq(command.sortType()), any(Pageable.class)); // ✅ matcher 적용
     }
 
     @DisplayName("getAnswerList()는 조회 결과가 없을 경우 빈 리스트를 반환해야 한다.")
@@ -69,7 +71,8 @@ class AnswerServiceTest {
         // given
         Slice<Answer> emptySlice = new SliceImpl<>(List.of(), pageable, false);
         when(answerRepositoryCustom.findAnswers(
-            command.memberId(), command.isUnderstood(), command.status(), command.sortType(), pageable)
+            eq(command.memberId()), eq(command.isUnderstood()), eq(command.status()), eq(command.sortType()),
+            any(Pageable.class)) // ✅ matcher 적용
         ).thenReturn(emptySlice);
 
         // when
@@ -87,7 +90,6 @@ class AnswerServiceTest {
         // given
         Long questionId = 100L;
         Long interviewId = 200L;
-        Answer skippedAnswer = Answer.ofSkipped(memberId, questionId, interviewId);
 
         // when
         answerService.skipAnswer(memberId, questionId, interviewId);

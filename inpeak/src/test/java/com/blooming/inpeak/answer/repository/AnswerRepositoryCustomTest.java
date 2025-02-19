@@ -59,7 +59,8 @@ class AnswerRepositoryCustomTest {
         testQuestion = entityManager.persist(Question.of("테스트 질문", QuestionType.SPRING, "최고의 답변"));
 
         // 인터뷰 객체 생성
-        testInterview = entityManager.persist(Interview.of(testMember.getId(), LocalDate.now().minusDays(1)));
+        testInterview = entityManager.persist(
+            Interview.of(testMember.getId(), LocalDate.now().minusDays(1)));
 
         // 테스트 데이터 저장
         List.of(
@@ -73,7 +74,8 @@ class AnswerRepositoryCustomTest {
     }
 
 
-    private Answer createAnswer(String userAnswer, boolean isUnderstood, Long runningTime, AnswerStatus status) {
+    private Answer createAnswer(String userAnswer, boolean isUnderstood, Long runningTime,
+        AnswerStatus status) {
         return Answer.builder()
             .questionId(testQuestion.getId())
             .memberId(testMember.getId())
@@ -92,12 +94,14 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.CORRECT, "DESC", pageable);
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
+            AnswerStatus.CORRECT, "DESC", pageable);
 
         // then
         assertNotNull(results);
         assertEquals(2, results.getNumberOfElements());
-        assertTrue(results.getContent().stream().allMatch(a -> a.getStatus() == AnswerStatus.CORRECT));
+        assertTrue(
+            results.getContent().stream().allMatch(a -> a.getStatus() == AnswerStatus.CORRECT));
     }
 
     @Test
@@ -107,7 +111,8 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL, "DESC", pageable);
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
+            AnswerStatus.ALL, "DESC", pageable);
 
         // then
         assertNotNull(results);
@@ -124,7 +129,8 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), true, AnswerStatus.CORRECT, "DESC", pageable);
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), true,
+            AnswerStatus.CORRECT, "DESC", pageable);
 
         // then
         assertNotNull(results);
@@ -139,7 +145,8 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 1); // 페이지 크기를 1로 설정
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL, "DESC", pageable);
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
+            AnswerStatus.ALL, "DESC", pageable);
 
         // then
         assertNotNull(results);
@@ -154,7 +161,8 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL, "DESC", pageable);
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
+            AnswerStatus.ALL, "DESC", pageable);
 
         // then
         assertNotNull(results);
@@ -169,12 +177,14 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL, "ASC", pageable);
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
+            AnswerStatus.ALL, "ASC", pageable);
 
         // then
         assertNotNull(results);
         List<Answer> answers = results.getContent();
-        assertTrue(answers.get(0).getCreatedAt().isBefore(answers.get(1).getCreatedAt())); // 오래된 순 확인
+        assertTrue(
+            answers.get(0).getCreatedAt().isBefore(answers.get(1).getCreatedAt())); // 오래된 순 확인
     }
 
     @Test
@@ -185,7 +195,8 @@ class AnswerRepositoryCustomTest {
 
         // when & then
         assertThrows(IllegalArgumentException.class, () -> {
-            answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL, "INVALID_SORT", pageable);
+            answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL,
+                "INVALID_SORT", pageable);
         });
     }
 }

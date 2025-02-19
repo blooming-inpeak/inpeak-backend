@@ -37,7 +37,7 @@ public class AnswerController {
         @AuthenticationPrincipal Member member,
         CorrectAnswerFilterRequest request
     ) {
-        AnswerFilterCommand command = request.toCommand(member);
+        AnswerFilterCommand command = request.toCommand(member, 5);
         return ResponseEntity.ok(answerService.getAnswerList(command));
     }
 
@@ -46,7 +46,7 @@ public class AnswerController {
         @AuthenticationPrincipal Member member,
         IncorrectAnswerFilterRequest request
     ) {
-        AnswerFilterCommand command = request.toCommand(member);
+        AnswerFilterCommand command = request.toCommand(member, 10);
         return ResponseEntity.ok(answerService.getAnswerList(command));
     }
 }

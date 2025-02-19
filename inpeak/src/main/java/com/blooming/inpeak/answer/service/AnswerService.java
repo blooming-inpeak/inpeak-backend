@@ -39,7 +39,7 @@ public class AnswerService {
      * @return 답변들과 페이징 정보
      */
     public AnswerListResponse getAnswerList(AnswerFilterCommand command) {
-        Pageable pageable = PageRequest.of(command.page(), 5);
+        Pageable pageable = PageRequest.of(command.page(), command.size());
 
         // 공통된 로직: 답변 리스트 가져오기
         Slice<Answer> results = answerRepositoryCustom.findAnswers(
