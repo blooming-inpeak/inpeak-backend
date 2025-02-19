@@ -1,7 +1,10 @@
 package com.blooming.inpeak.member.domain;
 
+import com.blooming.inpeak.common.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,14 +21,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Getter
 @Table(name = "members")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member implements UserDetails {
+public class Member extends BaseEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 15)
-    private String nickName;
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false, unique = true)
+    private String nickname;
 
     @Column(nullable = false, unique = true)
     private String accessToken;
@@ -36,18 +42,42 @@ public class Member implements UserDetails {
     @Column
     private Long correctAnswerCount;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OAuth2Provider provider;
+
     @Builder
-    private Member(String nickName, String accessToken) {
-        this.nickName = nickName;
+    private Member(
+        String email, String nickname, String accessToken,
+        Long totalQuestionCount, Long correctAnswerCount, OAuth2Provider provider
+    ) {
+        this.email = email;
+        this.nickname = nickname;
         this.accessToken = accessToken;
-        this.totalQuestionCount = 0L;
-        this.correctAnswerCount = 0L;
+        this.totalQuestionCount = totalQuestionCount;
+        this.correctAnswerCount = correctAnswerCount;
+        this.provider = provider;
     }
 
-    public static Member of(String nickName, String accessToken) {
+    // 테스트 파일에서 사용할 생성자
+    @Builder(access = AccessLevel.PRIVATE)
+    public Member(
+        Long id, String email, String nickname, String accessToken,
+        OAuth2Provider provider
+    ) {
+        this.id = id;
+        this.email = email;
+        this.nickname = nickname;
+        this.accessToken = accessToken;
+        this.provider = provider;
+    }
+
+    public static Member of(String email, String nickname, String accessToken, OAuth2Provider provider) {
         return Member.builder()
-            .nickName(nickName)
+            .email(email)
+            .nickname(nickname)
             .accessToken(accessToken)
+            .provider(provider)
             .build();
     }
 
@@ -58,11 +88,11 @@ public class Member implements UserDetails {
 
     @Override
     public String getPassword() {
-        return null;
+        return null; // OAuth2 로그인이므로 패스워드 필요 없음
     }
 
     @Override
     public String getUsername() {
-        return null;
+        return email; // 사용자 식별자로 이메일 사용
     }
 }

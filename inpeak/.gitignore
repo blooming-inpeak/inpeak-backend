@@ -8,6 +8,9 @@ build/
 ### Q Class ###
 src/main/generated
 
+### OAuth ###
+src/main/resources/application-oauth.yml
+
 ### STS ###
 .apt_generated
 .classpath

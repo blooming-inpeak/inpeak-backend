@@ -2,8 +2,8 @@ package com.blooming.inpeak.interview.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.blooming.inpeak.IntegrationTestSupport;
 import com.blooming.inpeak.interview.domain.Interview;
+import com.blooming.inpeak.support.IntegrationTestSupport;
 import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

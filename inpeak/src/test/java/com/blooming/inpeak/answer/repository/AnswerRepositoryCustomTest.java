@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.blooming.inpeak.answer.domain.Answer;
 import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.interview.domain.Interview;
-import com.blooming.inpeak.question.domain.*;
+import com.blooming.inpeak.member.domain.OAuth2Provider;
+import com.blooming.inpeak.question.domain.Question;
+import com.blooming.inpeak.question.domain.QuestionType;
 import com.blooming.inpeak.common.config.queryDSL.QuerydslConfig;
 import com.blooming.inpeak.member.domain.Member;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -44,7 +46,14 @@ class AnswerRepositoryCustomTest {
     void setUp() {
         answerRepositoryCustom = new AnswerRepositoryCustom(queryFactory);
 
-        testMember = entityManager.persist(Member.of("testUser", "accessToken123"));
+        testMember = entityManager.persist(
+            Member.of(
+                "test@test.com",
+                "test",
+                "test",
+                OAuth2Provider.KAKAO
+            )
+        );
 
         // QuestionType을 명시적으로 설정하여 저장
         testQuestion = entityManager.persist(Question.of("테스트 질문", QuestionType.SPRING, "최고의 답변"));

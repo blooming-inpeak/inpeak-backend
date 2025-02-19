@@ -4,13 +4,14 @@ spring:
       enabled: ALWAYS
   profiles:
     active: local
-#    include:
+    include:
 #      - aws
-#      - oauth
+      - oauth
 
-app:
-  token:
-    SECRET_KEY: ${SECRET_KEY:default_secret_key}
+jwt:
+  secret: ${SECRET_KEY:your-secret-key-should-be-at-least-32-characters-long}
+  expiration: ${EXPIRATION_TIME:86400000}
+  issuer: ${ISSUER:inpeak}
 
 ---
 spring:
