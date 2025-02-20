@@ -9,9 +9,11 @@ import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class InterviewService {
 
     private final InterviewRepository interviewRepository;
@@ -38,6 +40,14 @@ public class InterviewService {
         return RemainingInterviewsResponse.of(exists ? 0 : 1);
     }
 
+    /**
+     * 캘린더에 인터뷰 기록을 조회하는 메서드
+     *
+     * @param memberId 사용자 ID
+     * @param month 월
+     * @param year 년
+     * @return 인터뷰 시간, 아이디를 남은 리스트
+     */
     public List<CalendarResponse> getCalendar(Long memberId, int month, int year) {
         LocalDate startOfMonth = LocalDate.of(year, month, 1);
         LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
