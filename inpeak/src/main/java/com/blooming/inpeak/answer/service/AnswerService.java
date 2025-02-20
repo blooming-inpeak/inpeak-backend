@@ -4,10 +4,13 @@ import com.blooming.inpeak.answer.domain.Answer;
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerResponse;
+import com.blooming.inpeak.answer.dto.response.AnswersByInterviewResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -59,5 +62,25 @@ public class AnswerService {
             .toList();
 
         return new AnswerListResponse(answerResponses, results.hasNext());
+    }
+
+    /**
+     * 해당 날짜에 진행한 인터뷰에 대한 답변들을 인터뷰로 그룹핑하여 반환
+     *
+     * @param memberId 사용자 ID
+     * @param date 날짜
+     * @return 인터뷰 아이디로 그룹핑된 답변 아이디 리스트
+     */
+    public List<AnswersByInterviewResponse> getAnswersByDate(Long memberId, LocalDate date) {
+        List<Answer> answers = answerRepository.findAnswersByMemberAndDate(memberId, date);
+
+        // 인터뷰 ID별로 그룹핑하여 변환
+        Map<Long, List<Long>> groupedAnswers = answers.stream()
+            .collect(Collectors.groupingBy(
+                Answer::getInterviewId,
+                Collectors.mapping(Answer::getId, Collectors.toList())
+            ));
+
+        return AnswersByInterviewResponse.from(groupedAnswers);
     }
 }

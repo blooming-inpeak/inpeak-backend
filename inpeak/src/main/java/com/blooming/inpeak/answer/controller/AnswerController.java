@@ -5,9 +5,13 @@ import com.blooming.inpeak.answer.dto.request.IncorrectAnswerFilterRequest;
 import com.blooming.inpeak.answer.dto.request.CorrectAnswerFilterRequest;
 import com.blooming.inpeak.answer.dto.request.AnswerSkipRequest;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
+import com.blooming.inpeak.answer.dto.response.AnswersByInterviewResponse;
 import com.blooming.inpeak.answer.service.AnswerService;
 import com.blooming.inpeak.member.domain.Member;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -48,5 +53,13 @@ public class AnswerController {
     ) {
         AnswerFilterCommand command = request.toCommand(member, 10);
         return ResponseEntity.ok(answerService.getAnswerList(command));
+    }
+
+    @GetMapping("/date")
+    public ResponseEntity<List<AnswersByInterviewResponse>> getAnswersByDate(
+        @AuthenticationPrincipal Member member,
+        @RequestParam LocalDate date
+    ){
+        return ResponseEntity.ok(answerService.getAnswersByDate(member.getId(), date));
     }
 }
