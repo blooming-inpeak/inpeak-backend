@@ -1,4 +1,4 @@
-package com.blooming.inpeak.common.utils;
+package com.blooming.inpeak.auth.utils;
 
 import com.blooming.inpeak.member.domain.Member;
 import io.jsonwebtoken.Jwts;

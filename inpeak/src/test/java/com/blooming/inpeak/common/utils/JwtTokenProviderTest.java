@@ -3,6 +3,7 @@ package com.blooming.inpeak.common.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.blooming.inpeak.auth.utils.JwtTokenProvider;
 import com.blooming.inpeak.member.domain.Member;
 import com.blooming.inpeak.member.domain.OAuth2Provider;
 import com.blooming.inpeak.support.IntegrationTestSupport;

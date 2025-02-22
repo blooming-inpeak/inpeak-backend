@@ -1,8 +1,8 @@
-package com.blooming.inpeak.handler;
+package com.blooming.inpeak.auth.handler;
 
 import com.blooming.inpeak.auth.domain.RefreshToken;
 import com.blooming.inpeak.auth.repository.RefreshTokenRepository;
-import com.blooming.inpeak.common.utils.JwtTokenProvider;
+import com.blooming.inpeak.auth.utils.JwtTokenProvider;
 import com.blooming.inpeak.member.domain.Member;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
 import com.blooming.inpeak.member.repository.MemberRepository;
