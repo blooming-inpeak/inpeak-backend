@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "member_interests")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MemberInterests {
+public class MemberInterest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,5 +27,5 @@ public class MemberInterests {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Interests interest;
+    private InterestType interestType;
 }

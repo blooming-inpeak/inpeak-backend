@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/interview")
 public class InterviewController {
+
     private final InterviewService interviewService;
+
     @GetMapping("/calendar")
     public ResponseEntity<List<CalendarResponse>> getCalendar(
         @AuthenticationPrincipal Member member,

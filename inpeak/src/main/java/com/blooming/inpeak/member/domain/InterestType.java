@@ -1,6 +1,6 @@
 package com.blooming.inpeak.member.domain;
 
-public enum Interests {
+public enum InterestType {
     REACT,
     SPRING,
     DATABASE,

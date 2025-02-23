@@ -1,6 +1,6 @@
 package com.blooming.inpeak.question.service;
 
-import com.blooming.inpeak.member.service.MemberInterestsService;
+import com.blooming.inpeak.member.service.MemberInterestService;
 import com.blooming.inpeak.question.domain.Question;
 import com.blooming.inpeak.question.domain.QuestionType;
 import com.blooming.inpeak.question.dto.response.QuestionResponse;
@@ -10,18 +10,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class QuestionService {
     private final QuestionRepository questionRepository;
-    private final MemberInterestsService memberInterestsService;
+    private final MemberInterestService memberInterestService;
 
     private static final int QUESTION_COUNT = 3;
 
     public List<QuestionResponse> getFilteredQuestions(Long memberId) {
 
-        List<QuestionType> types = memberInterestsService.getUserQuestionTypes(memberId);
+        List<QuestionType> types = memberInterestService.getUserQuestionTypes(memberId);
 
         // QuestionType -> String 변환
         List<String> typeStrings = types.stream()

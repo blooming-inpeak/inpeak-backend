@@ -45,8 +45,11 @@ class InterviewServiceTest extends IntegrationTestSupport {
     @Transactional
     @DisplayName("회원이 오늘 인터뷰를 진행하지 않았다면 남은 인터뷰 횟수는 1이어야 한다.")
     void getRemainingInterviews_ShouldReturnOneIfNoInterviewToday() {
+        // given
+        LocalDate today = LocalDate.now();
+
         // when
-        RemainingInterviewsResponse response = interviewService.getRemainingInterviews(MEMBER_ID);
+        RemainingInterviewsResponse response = interviewService.getRemainingInterviews(MEMBER_ID, today);
 
         // then
         assertThat(response.remainingInterviews()).isEqualTo(1);
@@ -57,14 +60,16 @@ class InterviewServiceTest extends IntegrationTestSupport {
     @DisplayName("회원이 오늘 인터뷰를 이미 진행했다면 남은 인터뷰 횟수는 0이어야 한다.")
     void getRemainingInterviews_ShouldReturnZeroIfInterviewToday() {
         // given
-        interviewRepository.save(Interview.of(MEMBER_ID, LocalDate.now()));
+        LocalDate today = LocalDate.now();
+        interviewRepository.save(Interview.of(MEMBER_ID, today));
 
         // when
-        RemainingInterviewsResponse response = interviewService.getRemainingInterviews(MEMBER_ID);
+        RemainingInterviewsResponse response = interviewService.getRemainingInterviews(MEMBER_ID, today);
 
         // then
         assertThat(response.remainingInterviews()).isEqualTo(0);
     }
+
     @Test
     @Transactional
     @DisplayName("회원의 특정 월 인터뷰 기록을 조회하면 정확한 데이터를 반환해야 한다.")

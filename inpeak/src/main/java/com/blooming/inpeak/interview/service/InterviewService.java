@@ -2,6 +2,7 @@ package com.blooming.inpeak.interview.service;
 
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.interview.dto.response.CalendarResponse;
+import com.blooming.inpeak.interview.dto.response.InterviewResponse;
 import com.blooming.inpeak.interview.dto.response.RemainingInterviewsResponse;
 import com.blooming.inpeak.interview.dto.response.TotalInterviewsResponse;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
@@ -34,8 +35,7 @@ public class InterviewService {
      * @param memberId 사용자 ID
      * @return 모의면접 잔여 횟수
      */
-    public RemainingInterviewsResponse getRemainingInterviews(Long memberId) {
-        LocalDate today = LocalDate.now();
+    public RemainingInterviewsResponse getRemainingInterviews(Long memberId, LocalDate today) {
         boolean exists = interviewRepository.existsByMemberIdAndStartDate(memberId, today);
         return RemainingInterviewsResponse.of(exists ? 0 : 1);
     }
@@ -44,8 +44,8 @@ public class InterviewService {
      * 캘린더에 인터뷰 기록을 조회하는 메서드
      *
      * @param memberId 사용자 ID
-     * @param month 월
-     * @param year 년
+     * @param month    월
+     * @param year     년
      * @return 인터뷰 시간, 아이디를 남은 리스트
      */
     public List<CalendarResponse> getCalendar(Long memberId, int month, int year) {
@@ -56,5 +56,18 @@ public class InterviewService {
             startOfMonth, endOfMonth);
 
         return result.stream().map(CalendarResponse::from).toList();
+    }
+
+    /**
+     * 인터뷰를 생성하는 메서드
+     *
+     * @param memberId  사용자 ID
+     * @param startDate 인터뷰 시작 날짜
+     * @return 인터뷰 ID
+     */
+    @Transactional
+    public InterviewResponse createInterview(Long memberId, LocalDate startDate) {
+        Long interviewId = interviewRepository.save(Interview.of(memberId, startDate)).getId();
+        return InterviewResponse.of(interviewId);
     }
 }
