@@ -4,4 +4,5 @@ public enum QuestionType {
     REACT,
     SPRING,
     DATABASE,
+    DEVELOPMENT,
 }
