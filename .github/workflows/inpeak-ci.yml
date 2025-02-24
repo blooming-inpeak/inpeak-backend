@@ -1,0 +1,59 @@
+name: 매일메일 CI(v1)
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: write
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Github Checkout
+        uses: actions/checkout@v4
+
+      - name: JDK 21 구성
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+          cache: 'gradle'
+
+      - name: OAuth 설정 파일 생성
+        run: |
+          mkdir -p ./src/main/resources
+          echo "${{ secrets.APPLICATION_OAUTH_YML }}" > ./src/main/resources/application-oauth.yml
+
+      - name: Gradlew Wrapper 실행 권한 부여
+        run: chmod +x gradlew
+
+      - name: Gradle 캐싱
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Gradle 빌드
+        run: ./gradlew clean build
+
+      - name: 테스트 결과 출력
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: '**/build/test-results/**/*.xml'
+
+      - name: 테스트 실패 시 코멘트 생성
+        uses: mikepenz/action-junit-report@v5
+        if: failure()
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+          fail_on_failure: true
