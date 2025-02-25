@@ -15,10 +15,12 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
      */
     @Query("SELECT a FROM Answer a " +
         "JOIN FETCH a.interview i " +
+        "JOIN FETCH a.question q " +
         "WHERE i.memberId = :memberId " +
         "AND i.startDate = :date")
     List<Answer> findAnswersByMemberAndDate(
         @Param("memberId") Long memberId,
         @Param("date") LocalDate date
     );
+
 }

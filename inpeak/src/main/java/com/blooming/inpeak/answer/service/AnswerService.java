@@ -5,8 +5,10 @@ import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerResponse;
 import com.blooming.inpeak.answer.dto.response.AnswersByInterviewResponse;
+import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
+import com.blooming.inpeak.interview.domain.Interview;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -71,16 +73,16 @@ public class AnswerService {
      * @param date 날짜
      * @return 인터뷰 아이디로 그룹핑된 답변 아이디 리스트
      */
-    public List<AnswersByInterviewResponse> getAnswersByDate(Long memberId, LocalDate date) {
+    public InterviewWithAnswersResponse getAnswersByDate(Long memberId, LocalDate date) {
         List<Answer> answers = answerRepository.findAnswersByMemberAndDate(memberId, date);
 
-        // 인터뷰 ID별로 그룹핑하여 변환
-        Map<Long, List<Long>> groupedAnswers = answers.stream()
-            .collect(Collectors.groupingBy(
-                Answer::getInterviewId,
-                Collectors.mapping(Answer::getId, Collectors.toList())
-            ));
+        // ✅ 인터뷰가 한 개만 존재하므로 findFirst() 사용
+        Interview interview = answers.stream()
+            .map(Answer::getInterview)
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("해당 날짜에 진행된 인터뷰가 없습니다."));
 
-        return AnswersByInterviewResponse.from(groupedAnswers);
+        return InterviewWithAnswersResponse.from(interview, answers);
     }
+
 }

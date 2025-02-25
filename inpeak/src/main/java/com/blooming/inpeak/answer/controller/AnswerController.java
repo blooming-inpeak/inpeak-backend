@@ -6,6 +6,7 @@ import com.blooming.inpeak.answer.dto.request.CorrectAnswerFilterRequest;
 import com.blooming.inpeak.answer.dto.request.AnswerSkipRequest;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.AnswersByInterviewResponse;
+import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
 import com.blooming.inpeak.answer.service.AnswerService;
 import com.blooming.inpeak.member.domain.Member;
 import java.time.LocalDate;
@@ -56,7 +57,7 @@ public class AnswerController {
     }
 
     @GetMapping("/date")
-    public ResponseEntity<List<AnswersByInterviewResponse>> getAnswersByDate(
+    public ResponseEntity<InterviewWithAnswersResponse> getAnswersByDate(
         @AuthenticationPrincipal Member member,
         @RequestParam LocalDate date
     ){
