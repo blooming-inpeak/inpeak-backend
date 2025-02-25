@@ -67,11 +67,11 @@ public class AnswerService {
     }
 
     /**
-     * 해당 날짜에 진행한 인터뷰에 대한 답변들을 인터뷰로 그룹핑하여 반환
+     * 해당 날짜에 진행한 인터뷰에 대한 답변 리스트 반환
      *
      * @param memberId 사용자 ID
      * @param date 날짜
-     * @return 인터뷰 아이디로 그룹핑된 답변 아이디 리스트
+     * @return 인터뷰 ID, 답변 ID, 질문 제목 등
      */
     public InterviewWithAnswersResponse getAnswersByDate(Long memberId, LocalDate date) {
         List<Answer> answers = answerRepository.findAnswersByMemberAndDate(memberId, date);
