@@ -1,18 +1,17 @@
 package com.blooming.inpeak.answer.controller;
 
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
-import com.blooming.inpeak.answer.dto.request.IncorrectAnswerFilterRequest;
-import com.blooming.inpeak.answer.dto.request.CorrectAnswerFilterRequest;
 import com.blooming.inpeak.answer.dto.request.AnswerSkipRequest;
+import com.blooming.inpeak.answer.dto.request.CorrectAnswerFilterRequest;
+import com.blooming.inpeak.answer.dto.request.IncorrectAnswerFilterRequest;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
-import com.blooming.inpeak.answer.dto.response.AnswersByInterviewResponse;
+import com.blooming.inpeak.answer.dto.response.AnswerPresignedUrlResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
+import com.blooming.inpeak.answer.service.AnswerPresignedUrlService;
 import com.blooming.inpeak.answer.service.AnswerService;
 import com.blooming.inpeak.member.domain.Member;
 import java.time.LocalDate;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,7 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/answer")
 @RequiredArgsConstructor
 public class AnswerController {
+
     private final AnswerService answerService;
+    private final AnswerPresignedUrlService answerPresignedUrlService;
 
     @PostMapping("/skip")
     public ResponseEntity<Void> skipAnswer(
@@ -39,7 +40,7 @@ public class AnswerController {
     }
 
     @GetMapping("/correct")
-    public ResponseEntity<AnswerListResponse> getCorrectAnswerList (
+    public ResponseEntity<AnswerListResponse> getCorrectAnswerList(
         @AuthenticationPrincipal Member member,
         CorrectAnswerFilterRequest request
     ) {
@@ -48,7 +49,7 @@ public class AnswerController {
     }
 
     @GetMapping("/incorrect")
-    public ResponseEntity<AnswerListResponse> getIncorrectAnswerList (
+    public ResponseEntity<AnswerListResponse> getIncorrectAnswerList(
         @AuthenticationPrincipal Member member,
         IncorrectAnswerFilterRequest request
     ) {
@@ -60,7 +61,17 @@ public class AnswerController {
     public ResponseEntity<InterviewWithAnswersResponse> getAnswersByDate(
         @AuthenticationPrincipal Member member,
         @RequestParam LocalDate date
-    ){
+    ) {
         return ResponseEntity.ok(answerService.getAnswersByDate(member.getId(), date));
+    }
+
+    @GetMapping("/presigned-url")
+    public ResponseEntity<AnswerPresignedUrlResponse> getPresignedUrl(
+        @AuthenticationPrincipal Member member,
+        @RequestParam LocalDate startDate,
+        @RequestParam String fileName
+    ) {
+        return ResponseEntity.ok(
+            answerPresignedUrlService.getPreSignedUrl(member.getId(), startDate, fileName));
     }
 }

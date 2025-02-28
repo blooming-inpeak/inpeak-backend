@@ -11,6 +11,9 @@ src/main/generated
 ### OAuth ###
 src/main/resources/application-oauth.yml
 
+### AWS ###
+src/main/resources/application-aws.yml
+
 ### STS ###
 .apt_generated
 .classpath
