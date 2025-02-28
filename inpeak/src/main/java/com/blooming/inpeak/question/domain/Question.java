@@ -29,22 +29,22 @@ public class Question extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private QuestionType questionType;
+    private QuestionType type;
 
     @Column(nullable = false)
     private String bestAnswer;
 
     @Builder
-    private Question(String content, QuestionType questionType, String bestAnswer) {
+    private Question(String content, QuestionType type, String bestAnswer) {
         this.content = content;
-        this.questionType = questionType;
+        this.type = type;
         this.bestAnswer = bestAnswer;
     }
 
-    public static Question of(String content, QuestionType questionType, String bestAnswer) {
+    public static Question of(String content, QuestionType type, String bestAnswer) {
         return Question.builder()
             .content(content)
-            .questionType(questionType)
+            .type(type)
             .bestAnswer(bestAnswer)
             .build();
     }

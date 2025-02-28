@@ -12,8 +12,8 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     @Query(value = """
         SELECT q.*
-        FROM question q
-        LEFT JOIN answer a ON q.id = a.questionId AND a.memberId = :memberId
+        FROM questions q
+        LEFT JOIN answers a ON q.id = a.question_id AND a.member_id = :memberId
         WHERE q.type IN (:types)
         AND (a.id IS NULL OR a.is_understood = false)
         """, nativeQuery = true)

@@ -2,7 +2,6 @@ package com.blooming.inpeak.interview.service;
 
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.interview.dto.response.CalendarResponse;
-import com.blooming.inpeak.interview.dto.response.InterviewResponse;
 import com.blooming.inpeak.interview.dto.response.RemainingInterviewsResponse;
 import com.blooming.inpeak.interview.dto.response.TotalInterviewsResponse;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
@@ -66,8 +65,7 @@ public class InterviewService {
      * @return 인터뷰 ID
      */
     @Transactional
-    public InterviewResponse createInterview(Long memberId, LocalDate startDate) {
-        Long interviewId = interviewRepository.save(Interview.of(memberId, startDate)).getId();
-        return InterviewResponse.of(interviewId);
+    public Long createInterview(Long memberId, LocalDate startDate) {
+        return interviewRepository.save(Interview.of(memberId, startDate)).getId();
     }
 }
