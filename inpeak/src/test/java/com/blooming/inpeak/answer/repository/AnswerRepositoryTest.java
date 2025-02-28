@@ -90,7 +90,7 @@ class AnswerRepositoryTest extends IntegrationTestSupport {
         assertThat(answers).hasSize(3); // 3개의 답변이 조회되어야 함
         assertThat(answers.get(0).getInterview().getMemberId()).isEqualTo(memberId);
         assertThat(answers.get(1).getInterview().getStartDate()).isEqualTo(interviewDate);
-        assertThat(answers.get(0).getQuestion().getQuestionType()).isEqualTo(QuestionType.SPRING);
+        assertThat(answers.get(0).getQuestion().getType()).isEqualTo(QuestionType.SPRING);
 
         // AnswerStatus 검증
         assertThat(answers).extracting(Answer::getStatus)

@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -28,4 +29,17 @@ public class MemberInterest {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private InterestType interestType;
+
+    @Builder
+    private MemberInterest(Long memberId, InterestType interestType) {
+        this.memberId = memberId;
+        this.interestType = interestType;
+    }
+
+    public static MemberInterest of(Long memberId, InterestType interestType) {
+        return MemberInterest.builder()
+            .memberId(memberId)
+            .interestType(interestType)
+            .build();
+    }
 }

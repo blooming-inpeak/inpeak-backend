@@ -20,7 +20,7 @@ public class MemberInterestService {
      * @param memberId 사용자 ID
      * @return 회원의 관심사 리스트
      */
-    public List<InterestType> getUserQuestionTypes(Long memberId) {
+    public List<InterestType> getUserInterestTypes(Long memberId) {
 
         return memberInterestRepository.findInterestsByMemberId(memberId);
     }

@@ -31,7 +31,7 @@ public class InterviewStartService {
         Long interviewId = interviewService.createInterview(memberId, startDate);
 
         // 사용자의 관심사를 가져와 질문을 필터링
-        List<InterestType> interestTypes = memberInterestService.getUserQuestionTypes(memberId);
+        List<InterestType> interestTypes = memberInterestService.getUserInterestTypes(memberId);
         List<QuestionResponse> questionResponse = questionService.getFilteredQuestions(memberId, interestTypes);
 
         return InterviewStartResponse.of(interviewId, questionResponse);
