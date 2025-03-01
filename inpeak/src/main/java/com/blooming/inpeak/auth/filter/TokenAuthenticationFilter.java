@@ -1,6 +1,9 @@
 package com.blooming.inpeak.auth.filter;
 
 import com.blooming.inpeak.auth.utils.JwtTokenProvider;
+import com.blooming.inpeak.member.domain.Member;
+import com.blooming.inpeak.member.dto.MemberPrincipal;
+import com.blooming.inpeak.member.repository.MemberRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -21,6 +27,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private final static String HEADER_AUTHORIZATION = "Authorization";
     private final static String TOKEN_PREFIX = "Bearer ";
     private final JwtTokenProvider jwtTokenProvider;
+    private final MemberRepository memberRepository;
 
     @Override
     protected void doFilterInternal(
@@ -45,7 +52,23 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 토큰이 유효한 경우에만 다음 필터로 진행
+        // 토큰이 유효한 경우, 사용자 정보 설정 추가 필요
+        try {
+            String userId = jwtTokenProvider.getUserIdFromToken(token);
+            Member member = memberRepository.findById(Long.valueOf(userId))
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+
+            // 인증 객체 생성 및 설정
+            MemberPrincipal memberPrincipal = MemberPrincipal.create(member, null); // 속성은 필요에 따라 조정
+            UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(memberPrincipal, null, memberPrincipal.getAuthorities());
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (Exception e) {
+            // 오류 처리
+            log.error("인증 객체 설정 중 오류 발생: {}", e.getMessage());
+        }
+
         filterChain.doFilter(request, response);
     }
 
