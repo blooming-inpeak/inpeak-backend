@@ -76,7 +76,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"message\":\"" + message + "\"}");
+//        response.getWriter().write("{\"message\":\"" + message + "\"}");
 
         if (log.isErrorEnabled()) {
             log.error("인증 필터에서 요청이 중단됨: {}", message);
