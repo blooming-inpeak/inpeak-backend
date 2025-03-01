@@ -1,6 +1,7 @@
 package com.blooming.inpeak.member.service;
 
 import com.blooming.inpeak.member.domain.InterestType;
+import com.blooming.inpeak.member.dto.response.MemberInterestResponse;
 import com.blooming.inpeak.member.repository.MemberInterestRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,18 @@ public class MemberInterestService {
      * @param memberId 사용자 ID
      * @return 회원의 관심사 리스트
      */
-    public List<InterestType> getUserInterestTypes(Long memberId) {
+    public List<InterestType> getMemberInterestTypes(Long memberId) {
 
         return memberInterestRepository.findInterestsByMemberId(memberId);
+    }
+
+    public MemberInterestResponse getMemberInterestStrings(Long memberId) {
+        List<InterestType> interests = getMemberInterestTypes(memberId);
+
+        List<String> interestStrings = interests.stream()
+            .map(InterestType::toFormattedString)
+            .toList();
+
+        return MemberInterestResponse.of(interestStrings);
     }
 }
