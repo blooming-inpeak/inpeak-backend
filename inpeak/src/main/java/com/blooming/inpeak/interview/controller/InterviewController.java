@@ -4,7 +4,7 @@ import com.blooming.inpeak.interview.dto.response.CalendarResponse;
 import com.blooming.inpeak.interview.dto.response.InterviewStartResponse;
 import com.blooming.inpeak.interview.service.InterviewService;
 import com.blooming.inpeak.interview.service.InterviewStartService;
-import com.blooming.inpeak.member.domain.Member;
+import com.blooming.inpeak.member.dto.MemberPrincipal;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -27,19 +27,21 @@ public class InterviewController {
 
     @GetMapping("/calendar")
     public ResponseEntity<List<CalendarResponse>> getCalendar(
-        @AuthenticationPrincipal Member member,
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @RequestParam int month,
         @RequestParam int year
     ) {
-        return ResponseEntity.ok(interviewService.getCalendar(member.getId(), month, year));
+        return ResponseEntity.ok(interviewService.getCalendar(memberPrincipal.id(), month, year));
     }
 
     @PostMapping("/start")
     public ResponseEntity<InterviewStartResponse> startInterview(
-        @AuthenticationPrincipal Member member,
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @RequestParam LocalDate startDate
     ) {
-        InterviewStartResponse response = interviewStartService.startInterview(member.getId(), startDate);
+        InterviewStartResponse response =
+            interviewStartService.startInterview(memberPrincipal.id(), startDate);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

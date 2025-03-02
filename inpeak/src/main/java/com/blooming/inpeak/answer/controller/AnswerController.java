@@ -9,7 +9,7 @@ import com.blooming.inpeak.answer.dto.response.AnswerPresignedUrlResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
 import com.blooming.inpeak.answer.service.AnswerPresignedUrlService;
 import com.blooming.inpeak.answer.service.AnswerService;
-import com.blooming.inpeak.member.domain.Member;
+import com.blooming.inpeak.member.dto.MemberPrincipal;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,46 +32,46 @@ public class AnswerController {
 
     @PostMapping("/skip")
     public ResponseEntity<Void> skipAnswer(
-        @AuthenticationPrincipal Member member,
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @RequestBody AnswerSkipRequest request
     ) {
-        answerService.skipAnswer(member.getId(), request.questionId(), request.interviewId());
+        answerService.skipAnswer(memberPrincipal.id(), request.questionId(), request.interviewId());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/correct")
     public ResponseEntity<AnswerListResponse> getCorrectAnswerList(
-        @AuthenticationPrincipal Member member,
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         CorrectAnswerFilterRequest request
     ) {
-        AnswerFilterCommand command = request.toCommand(member, 5);
+        AnswerFilterCommand command = request.toCommand(memberPrincipal, 5);
         return ResponseEntity.ok(answerService.getAnswerList(command));
     }
 
     @GetMapping("/incorrect")
     public ResponseEntity<AnswerListResponse> getIncorrectAnswerList(
-        @AuthenticationPrincipal Member member,
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         IncorrectAnswerFilterRequest request
     ) {
-        AnswerFilterCommand command = request.toCommand(member, 10);
+        AnswerFilterCommand command = request.toCommand(memberPrincipal, 10);
         return ResponseEntity.ok(answerService.getAnswerList(command));
     }
 
     @GetMapping("/date")
     public ResponseEntity<InterviewWithAnswersResponse> getAnswersByDate(
-        @AuthenticationPrincipal Member member,
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @RequestParam LocalDate date
     ) {
-        return ResponseEntity.ok(answerService.getAnswersByDate(member.getId(), date));
+        return ResponseEntity.ok(answerService.getAnswersByDate(memberPrincipal.id(), date));
     }
 
     @GetMapping("/presigned-url")
     public ResponseEntity<AnswerPresignedUrlResponse> getPresignedUrl(
-        @AuthenticationPrincipal Member member,
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @RequestParam LocalDate startDate,
         @RequestParam String fileName
     ) {
         return ResponseEntity.ok(
-            answerPresignedUrlService.getPreSignedUrl(member.getId(), startDate, fileName));
+            answerPresignedUrlService.getPreSignedUrl(memberPrincipal.id(), startDate, fileName));
     }
 }
