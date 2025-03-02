@@ -22,10 +22,15 @@ public class MemberInterestService {
      * @return 회원의 관심사 리스트
      */
     public List<InterestType> getMemberInterestTypes(Long memberId) {
-
         return memberInterestRepository.findInterestsByMemberId(memberId);
     }
 
+    /**
+     * 회원의 관심사를 포맷팅된 문자열로 가져오는 메서드
+     *
+     * @param memberId 사용자 ID
+     * @return 회원의 관심사 문자열 리스트
+     */
     public MemberInterestResponse getMemberInterestStrings(Long memberId) {
         List<InterestType> interests = getMemberInterestTypes(memberId);
 

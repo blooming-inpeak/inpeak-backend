@@ -29,7 +29,6 @@ public class QuestionService {
      * @return 질문 리스트
      */
     public List<QuestionResponse> getFilteredQuestions(Long memberId, List<InterestType> interestTypes) {
-
         // InterestType -> QuestionType 변환 후 직군별 기본 질문 타입 추가
         List<QuestionType> types = convertToQuestionType(interestTypes);
         List<String> typeStrings = addDefaultQuestionType(types);

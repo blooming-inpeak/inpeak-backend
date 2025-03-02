@@ -1,6 +1,6 @@
 package com.blooming.inpeak.member.controller;
 
-import com.blooming.inpeak.member.domain.Member;
+import com.blooming.inpeak.member.dto.MemberPrincipal;
 import com.blooming.inpeak.member.dto.response.MemberInterestResponse;
 import com.blooming.inpeak.member.service.MemberInterestService;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +19,9 @@ public class MemberInterestController {
 
     @GetMapping("/list")
     public ResponseEntity<MemberInterestResponse> getMemberInterest(
-        @AuthenticationPrincipal Member member
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal
     ) {
-        return ResponseEntity.ok(memberInterestService.getMemberInterestStrings(member.getId()));
+        return ResponseEntity.ok(
+            memberInterestService.getMemberInterestStrings(memberPrincipal.id()));
     }
 }

@@ -38,7 +38,6 @@ public class AnswerPresignedUrlService {
      * @return Presigned URL
      */
     public AnswerPresignedUrlResponse getPreSignedUrl(Long memberId, LocalDate startDate, String fileName) {
-
         // 파일명에서 확장자 추출 및 Object Key 생성
         String extension = extractExtension(fileName);
         String key = generateObjectKey(memberId, startDate, extension);
