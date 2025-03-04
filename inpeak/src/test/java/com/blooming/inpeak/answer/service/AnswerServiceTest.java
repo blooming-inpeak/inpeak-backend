@@ -21,7 +21,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -51,19 +50,17 @@ class AnswerServiceTest extends IntegrationTestSupport {
     private EntityManager entityManager;
 
     private Long memberId;
-    private Pageable pageable;
     private AnswerFilterCommand command;
 
     @BeforeEach
     void setUp() {
         memberId = 1L;
-        pageable = PageRequest.of(0, 5);
         command = new AnswerFilterCommand(memberId, "DESC", true, AnswerStatus.CORRECT, 0, 5);
     }
 
-    private Answer createAnswer(Long memberId, Long questionId, Long interviewId, String userAnswer,
+    private void createAnswer(Long memberId, Long questionId, Long interviewId, String userAnswer,
         Long runningTime, AnswerStatus status, boolean isUnderstood) {
-        return answerRepository.save(Answer.builder()
+        answerRepository.save(Answer.builder()
             .questionId(questionId)
             .memberId(memberId)
             .interviewId(interviewId)
@@ -76,7 +73,7 @@ class AnswerServiceTest extends IntegrationTestSupport {
             .build());
     }
 
-    @DisplayName("getAnswerList()는 findAnswers()를 올바른 인자로 호출해야 한다.")
+    @DisplayName("저장된 데이터를 기반으로 올바른 응답을 반환해야 한다")
     @Transactional
     @Test
     void getAnswerList_ShouldReturnCorrectResults() {
