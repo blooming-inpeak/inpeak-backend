@@ -6,6 +6,7 @@ import com.blooming.inpeak.answer.domain.Answer;
 import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.member.domain.OAuth2Provider;
+import com.blooming.inpeak.member.domain.RegistrationStatus;
 import com.blooming.inpeak.question.domain.Question;
 import com.blooming.inpeak.question.domain.QuestionType;
 import com.blooming.inpeak.common.config.queryDSL.QuerydslConfig;
@@ -51,7 +52,8 @@ class AnswerRepositoryCustomTest {
                 "test@test.com",
                 "test",
                 "test",
-                OAuth2Provider.KAKAO
+                OAuth2Provider.KAKAO,
+                RegistrationStatus.COMPLETED
             )
         );
 

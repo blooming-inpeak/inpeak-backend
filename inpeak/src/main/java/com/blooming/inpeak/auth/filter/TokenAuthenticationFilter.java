@@ -58,10 +58,16 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             Member member = memberRepository.findById(Long.valueOf(userId))
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + userId));
 
+            if (!member.registrationCompleted()) {
+                sendRegistrationErrorResponse(response, "가입이 완료되지 않은 사용자입니다");
+                return;
+            }
+
             // 인증 객체 생성 및 설정
             MemberPrincipal memberPrincipal = MemberPrincipal.create(member, null); // 속성은 필요에 따라 조정
             UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(memberPrincipal, null, memberPrincipal.getAuthorities());
+                new UsernamePasswordAuthenticationToken(
+                    memberPrincipal, null, memberPrincipal.getAuthorities());
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception e) {
@@ -80,6 +86,19 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
         if (log.isErrorEnabled()) {
             log.error("인증 필터에서 요청이 중단됨: {}", message);
+        }
+    }
+
+    private void sendRegistrationErrorResponse(
+        HttpServletResponse response, String message
+    ) throws IOException {
+        response.setStatus(488);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"message\":\"" + message + "\"}");
+
+        if (log.isErrorEnabled()) {
+            log.error("가입이 완료되지 않은 사용자입니다: {}", message);
         }
     }
 }

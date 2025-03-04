@@ -48,10 +48,15 @@ public class Member extends BaseEntity implements UserDetails {
     @Column(nullable = false)
     private OAuth2Provider provider;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RegistrationStatus registrationStatus;
+
     @Builder
     private Member(
         String email, String nickname, String accessToken,
-        Long totalQuestionCount, Long correctAnswerCount, OAuth2Provider provider
+        Long totalQuestionCount, Long correctAnswerCount, OAuth2Provider provider,
+        RegistrationStatus registrationStatus
     ) {
         this.email = email;
         this.nickname = nickname;
@@ -59,27 +64,36 @@ public class Member extends BaseEntity implements UserDetails {
         this.totalQuestionCount = totalQuestionCount;
         this.correctAnswerCount = correctAnswerCount;
         this.provider = provider;
+        this.registrationStatus =
+            registrationStatus != null ? registrationStatus : RegistrationStatus.INITIATED;
     }
 
     // 테스트 파일에서 사용할 생성자
     @Builder(access = AccessLevel.PRIVATE)
     public Member(
         Long id, String email, String nickname, String accessToken,
-        OAuth2Provider provider
+        OAuth2Provider provider, RegistrationStatus registrationStatus
     ) {
         this.id = id;
         this.email = email;
         this.nickname = nickname;
         this.accessToken = accessToken;
         this.provider = provider;
+        this.registrationStatus =
+            registrationStatus != null ? registrationStatus : RegistrationStatus.INITIATED;
     }
 
-    public static Member of(String email, String nickname, String accessToken, OAuth2Provider provider) {
+    public static Member of(
+        String email, String nickname, String accessToken,
+        OAuth2Provider provider, RegistrationStatus registrationStatus
+    ) {
         return Member.builder()
             .email(email)
             .nickname(nickname)
             .accessToken(accessToken)
             .provider(provider)
+            .registrationStatus(
+                registrationStatus != null ? registrationStatus : RegistrationStatus.INITIATED)
             .build();
     }
 
@@ -96,5 +110,9 @@ public class Member extends BaseEntity implements UserDetails {
     @Override
     public String getUsername() {
         return email;
+    }
+
+    public boolean registrationCompleted() {
+        return registrationStatus == RegistrationStatus.COMPLETED;
     }
 }

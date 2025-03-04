@@ -3,6 +3,7 @@ package com.blooming.inpeak.auth.service;
 import com.blooming.inpeak.common.utils.NicknameGenerator;
 import com.blooming.inpeak.member.domain.Member;
 import com.blooming.inpeak.member.domain.OAuth2Provider;
+import com.blooming.inpeak.member.domain.RegistrationStatus;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
 import com.blooming.inpeak.member.dto.OAuth2Command;
 import com.blooming.inpeak.member.repository.MemberRepository;
@@ -42,7 +43,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String userNameAttributeName = userRequest.getClientRegistration()
             .getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
 
-        OAuth2Command oAuth2Command = OAuth2Command.of(provider, userNameAttributeName, oAuth2User.getAttributes());
+        OAuth2Command oAuth2Command = OAuth2Command.of(
+            provider, userNameAttributeName, oAuth2User.getAttributes()
+        );
 
         String email = oAuth2Command.getEmail();
         String accessToken = userRequest.getAccessToken().getTokenValue();
@@ -64,6 +67,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             .provider(provider)
             .totalQuestionCount(0L)
             .correctAnswerCount(0L)
+            .registrationStatus(RegistrationStatus.INITIATED)
             .build();
 
         return memberRepository.save(member);

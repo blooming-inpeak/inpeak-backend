@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.blooming.inpeak.auth.utils.JwtTokenProvider;
 import com.blooming.inpeak.member.domain.Member;
 import com.blooming.inpeak.member.domain.OAuth2Provider;
+import com.blooming.inpeak.member.domain.RegistrationStatus;
 import com.blooming.inpeak.support.IntegrationTestSupport;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
@@ -134,6 +135,8 @@ class JwtTokenProviderTest extends IntegrationTestSupport {
      * 테스트용 Member 객체 생성 헬퍼 메서드
      */
     private Member createTestMember(Long id) {
-        return new Member(id, "test@example.com", "테스트유저", "kakao-token", OAuth2Provider.KAKAO);
+        return new Member(
+            id, "test@example.com", "테스트유저", "kakao-token",
+            OAuth2Provider.KAKAO, RegistrationStatus.COMPLETED);
     }
 }
