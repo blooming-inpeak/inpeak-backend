@@ -13,6 +13,13 @@ jwt:
   expiration: ${EXPIRATION_TIME:86400000}
   issuer: ${ISSUER:inpeak}
 
+openai:
+  api:
+    key: ${OPENAI_API_KEY}
+    base-url: https://api.openai.com/v1
+  models:
+    audio: gpt-4o-mini-audio-preview
+
 ---
 spring:
   config:

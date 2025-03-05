@@ -4,15 +4,12 @@ import com.blooming.inpeak.answer.domain.Answer;
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerResponse;
-import com.blooming.inpeak.answer.dto.response.AnswersByInterviewResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
 import com.blooming.inpeak.interview.domain.Interview;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,14 +21,15 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AnswerService {
+
     private final AnswerRepository answerRepository;
     private final AnswerRepositoryCustom answerRepositoryCustom;
 
     /**
      * 답변을 스킵하는 메서드
      *
-     * @param memberId 사용자 ID
-     * @param questionId 답변 ID
+     * @param memberId    사용자 ID
+     * @param questionId  답변 ID
      * @param interviewId 인터뷰 ID
      */
     @Transactional
@@ -70,7 +68,7 @@ public class AnswerService {
      * 해당 날짜에 진행한 인터뷰에 대한 답변 리스트 반환
      *
      * @param memberId 사용자 ID
-     * @param date 날짜
+     * @param date     날짜
      * @return 인터뷰 ID, 답변 ID, 질문 제목 등
      */
     public InterviewWithAnswersResponse getAnswersByDate(Long memberId, LocalDate date) {
