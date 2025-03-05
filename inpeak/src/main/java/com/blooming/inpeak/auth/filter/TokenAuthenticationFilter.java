@@ -9,13 +9,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -53,27 +53,28 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 토큰이 유효한 경우, 사용자 정보 설정 추가 필요
-        try {
-            String userId = jwtTokenProvider.getUserIdFromToken(token);
-            Member member = memberRepository.findById(Long.valueOf(userId))
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+        String userId = jwtTokenProvider.getUserIdFromToken(token);
+        Optional<Member> optionalMember = memberRepository.findById(Long.valueOf(userId));
 
-            if (!member.registrationCompleted()) {
-                sendRegistrationErrorResponse(response, "가입이 완료되지 않은 사용자입니다");
-                return;
-            }
-
-            // 인증 객체 생성 및 설정
-            MemberPrincipal memberPrincipal = MemberPrincipal.create(member, null); // 속성은 필요에 따라 조정
-            UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                    memberPrincipal, null, memberPrincipal.getAuthorities());
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        } catch (Exception e) {
-            // 오류 처리
-            log.error("인증 객체 설정 중 오류 발생: {}", e.getMessage());
+        if (optionalMember.isEmpty()) {
+            sendErrorResponse(response, "사용자를 찾을 수 없습니다");
+            return;
         }
+
+        Member member = optionalMember.get();
+
+        if (!member.registrationCompleted()) {
+            sendRegistrationErrorResponse(response, "가입이 완료되지 않은 사용자입니다");
+            return;
+        }
+
+        // 인증 객체 생성 및 설정
+        MemberPrincipal memberPrincipal = MemberPrincipal.create(member, null); // 속성은 필요에 따라 조정
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken(
+                memberPrincipal, null, memberPrincipal.getAuthorities());
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
     }
