@@ -9,6 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,12 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private final static String TOKEN_PREFIX = "Bearer ";
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
+
+    // 회원 등록 관련 경로 상수로 정의
+    private final List<String> REGISTRATION_PATHS = List.of(
+        "/interest",
+        "/interest/registration"
+    );
 
     @Override
     protected void doFilterInternal(
@@ -63,7 +70,13 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
         Member member = optionalMember.get();
 
-        if (!member.registrationCompleted()) {
+        // 현재 요청 경로가 회원 등록 관련 경로인지 확인
+        String path = request.getServletPath();
+        boolean isRegistrationRelatedPath = REGISTRATION_PATHS.stream()
+            .anyMatch(path::startsWith);
+
+        // 회원 등록이 완료되지 않았고, 현재 경로가 등록 관련 경로가 아닐 경우에만 488 오류 반환
+        if (!member.registrationCompleted() && !isRegistrationRelatedPath) {
             sendRegistrationErrorResponse(response, "가입이 완료되지 않은 사용자입니다");
             return;
         }
