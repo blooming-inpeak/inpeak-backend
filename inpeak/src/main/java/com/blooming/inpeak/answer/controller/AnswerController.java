@@ -69,9 +69,9 @@ public class AnswerController {
     public ResponseEntity<AnswerPresignedUrlResponse> getPresignedUrl(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @RequestParam LocalDate startDate,
-        @RequestParam String fileName
+        @RequestParam String extension
     ) {
         return ResponseEntity.ok(
-            answerPresignedUrlService.getPreSignedUrl(memberPrincipal.id(), startDate, fileName));
+            answerPresignedUrlService.getPreSignedUrl(memberPrincipal.id(), startDate, extension));
     }
 }
