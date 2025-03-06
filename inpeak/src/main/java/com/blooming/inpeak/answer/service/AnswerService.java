@@ -92,6 +92,11 @@ public class AnswerService {
         return InterviewWithAnswersResponse.from(interview, answers);
     }
 
+    /**
+     * 답변을 생성하는 메서드
+     *
+     * @param command 답변 생성 명령
+     */
     public void createAnswer(AnswerCreateCommand command) {
         Question question = questionRepository.findById(command.questionId())
             .orElseThrow(() -> new IllegalArgumentException("해당 질문이 존재하지 않습니다."));

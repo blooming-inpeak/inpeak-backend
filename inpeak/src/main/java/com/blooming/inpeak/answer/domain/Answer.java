@@ -84,7 +84,14 @@ public class Answer extends BaseEntity {
         this.AIAnswer = AIAnswer;
     }
 
-    // 스킵된 답변 생성
+    /**
+     * 사용자가 답변을 스킵한 경우의 Answer 객체를 생성하는 메서드
+     *
+     * @param memberId 사용자 ID
+     * @param questionId 질문 ID
+     * @param interviewId 인터뷰 ID
+     * @return Answer 객체
+     */
     public static Answer ofSkipped(Long memberId, Long questionId, Long interviewId) {
         return Answer.builder()
             .questionId(questionId)
@@ -95,6 +102,13 @@ public class Answer extends BaseEntity {
             .build();
     }
 
+    /**
+     * 사용자가 제출한 답변을 저장하는 메서드
+     *
+     * @param command 답변 생성 명령
+     * @param feedback GPT로부터 받은 피드백
+     * @return Answer 객체
+     */
     public static Answer of(AnswerCreateCommand command, String feedback) {
         String[] texts = splitAndTrimText(feedback);
 
