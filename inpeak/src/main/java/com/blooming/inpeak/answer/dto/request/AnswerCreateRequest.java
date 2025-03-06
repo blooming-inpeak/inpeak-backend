@@ -1,11 +1,16 @@
 package com.blooming.inpeak.answer.dto.request;
 
 import com.blooming.inpeak.answer.dto.command.AnswerCreateCommand;
+import jakarta.validation.constraints.NotNull;
 
 public record AnswerCreateRequest (
+    @NotNull
     String audioFile,
+    @NotNull
     int time,
+    @NotNull
     Long questionId,
+    @NotNull
     Long interviewId,
     String videoURL
 ){
