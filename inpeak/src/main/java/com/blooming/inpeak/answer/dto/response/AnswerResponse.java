@@ -9,7 +9,7 @@ import lombok.Builder;
 public record AnswerResponse(
     LocalDate dateTime,
     String questionContent,
-    Long runningTime,
+    int runningTime,
     AnswerStatus answerStatus,
     boolean isUnderstood
 ) {

@@ -7,18 +7,20 @@ spring:
     include:
       - aws
       - oauth
+      - openai
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
 
 jwt:
   secret: ${SECRET_KEY:your-secret-key-should-be-at-least-32-characters-long}
   expiration: ${EXPIRATION_TIME:86400000}
   issuer: ${ISSUER:inpeak}
 
-openai:
-  api:
-    key: ${OPENAI_API_KEY}
-    base-url: https://api.openai.com/v1
-  models:
-    audio: gpt-4o-mini-audio-preview
+server:
+  tomcat:
+    max-http-form-post-size: 50MB
 
 ---
 spring:

@@ -59,7 +59,7 @@ class AnswerServiceTest extends IntegrationTestSupport {
     }
 
     private void createAnswer(Long memberId, Long questionId, Long interviewId, String userAnswer,
-        Long runningTime, AnswerStatus status, boolean isUnderstood) {
+        int runningTime, AnswerStatus status, boolean isUnderstood) {
         answerRepository.save(Answer.builder()
             .questionId(questionId)
             .memberId(memberId)
@@ -84,9 +84,9 @@ class AnswerServiceTest extends IntegrationTestSupport {
         Question question2 = questionRepository.save(
             Question.of("Spring DI의 원리", QuestionType.SPRING, "모법 답변"));
 
-        createAnswer(memberId, question1.getId(), interview.getId(), "GC는 어쩌고 저쩌고", 120L,
+        createAnswer(memberId, question1.getId(), interview.getId(), "GC는 어쩌고 저쩌고", 120,
             AnswerStatus.CORRECT, true);
-        createAnswer(memberId, question2.getId(), interview.getId(), "Spring의 DI 원리가 어쩌고", 130L,
+        createAnswer(memberId, question2.getId(), interview.getId(), "Spring의 DI 원리가 어쩌고", 130,
             AnswerStatus.INCORRECT, false);
 
         entityManager.flush();
@@ -144,9 +144,9 @@ class AnswerServiceTest extends IntegrationTestSupport {
         Question question2 = questionRepository.save(
             Question.of("Spring DI의 원리", QuestionType.SPRING, "모법 답변"));
 
-        createAnswer(memberId, question1.getId(), interview.getId(), "GC는 어쩌고 저쩌고", 120L,
+        createAnswer(memberId, question1.getId(), interview.getId(), "GC는 어쩌고 저쩌고", 120,
             AnswerStatus.CORRECT, true);
-        createAnswer(memberId, question2.getId(), interview.getId(), "Spring의 DI 원리가 어쩌고", 130L,
+        createAnswer(memberId, question2.getId(), interview.getId(), "Spring의 DI 원리가 어쩌고", 130,
             AnswerStatus.INCORRECT, false);
 
         entityManager.flush();

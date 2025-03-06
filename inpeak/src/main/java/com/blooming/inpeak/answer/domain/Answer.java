@@ -1,5 +1,6 @@
 package com.blooming.inpeak.answer.domain;
 
+import com.blooming.inpeak.answer.dto.command.AnswerCreateCommand;
 import com.blooming.inpeak.common.base.BaseEntity;
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.question.domain.Question;
@@ -14,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.Arrays;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -53,19 +55,23 @@ public class Answer extends BaseEntity {
 
     private String videoURL;
 
-    private Long runningTime;
+    private int runningTime;
 
     private String comment;
 
     private boolean isUnderstood;
+
+    private String AIAnswer;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private AnswerStatus status;
 
     @Builder
-    private Answer(Long questionId, Long memberId, Long interviewId, String userAnswer, String videoURL,
-        Long runningTime, String comment, Boolean isUnderstood, AnswerStatus status) {
+    private Answer(Long questionId, Long memberId, Long interviewId, String userAnswer,
+        String videoURL,
+        int runningTime, String comment, Boolean isUnderstood, AnswerStatus status,
+        String AIAnswer) {
         this.questionId = questionId;
         this.memberId = memberId;
         this.interviewId = interviewId;
@@ -75,6 +81,7 @@ public class Answer extends BaseEntity {
         this.comment = comment;
         this.isUnderstood = isUnderstood;
         this.status = status;
+        this.AIAnswer = AIAnswer;
     }
 
     // 스킵된 답변 생성
@@ -86,5 +93,31 @@ public class Answer extends BaseEntity {
             .status(AnswerStatus.SKIPPED) // 스킵된 상태 설정
             .isUnderstood(false) // 이해하지 못한 상태로 설정
             .build();
+    }
+
+    public static Answer of(AnswerCreateCommand command, String feedback) {
+        String[] texts = splitAndTrimText(feedback);
+
+        String userAnswer = texts[0];
+        AnswerStatus status = AnswerStatus.valueOf(texts[1]);
+        String AIAnswer = texts[2];
+
+        return Answer.builder()
+            .questionId(command.questionId())
+            .memberId(command.memberId())
+            .interviewId(command.interviewId())
+            .userAnswer(userAnswer)
+            .videoURL(command.videoURL())
+            .runningTime(command.time())
+            .isUnderstood(false)
+            .status(status)
+            .AIAnswer(AIAnswer)
+            .build();
+    }
+
+    private static String[] splitAndTrimText(String feedback) {
+        return Arrays.stream(feedback.split("@"))
+            .map(String::trim) // 각 문자열에 trim 적용
+            .toArray(String[]::new);
     }
 }

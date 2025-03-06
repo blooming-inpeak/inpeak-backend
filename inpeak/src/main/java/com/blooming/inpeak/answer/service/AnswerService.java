@@ -1,19 +1,25 @@
 package com.blooming.inpeak.answer.service;
 
 import com.blooming.inpeak.answer.domain.Answer;
+import com.blooming.inpeak.answer.domain.AnswerStatus;
+import com.blooming.inpeak.answer.dto.command.AnswerCreateCommand;
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
+import com.blooming.inpeak.answer.repository.UserAnswerStatsRepository;
 import com.blooming.inpeak.interview.domain.Interview;
+import com.blooming.inpeak.question.domain.Question;
+import com.blooming.inpeak.question.repository.QuestionRepository;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +30,9 @@ public class AnswerService {
 
     private final AnswerRepository answerRepository;
     private final AnswerRepositoryCustom answerRepositoryCustom;
+    private final GPTService gptService;
+    private final QuestionRepository questionRepository;
+    private final UserAnswerStatsRepository userAnswerStatsRepository;
 
     /**
      * 답변을 스킵하는 메서드
@@ -83,4 +92,15 @@ public class AnswerService {
         return InterviewWithAnswersResponse.from(interview, answers);
     }
 
+    public void createAnswer(AnswerCreateCommand command) {
+        Question question = questionRepository.findById(command.questionId())
+            .orElseThrow(() -> new IllegalArgumentException("해당 질문이 존재하지 않습니다."));
+
+        String feedback = gptService.makeGPTResponse(command.audioFile(), question.getContent());
+
+        Answer answer = Answer.of(command, feedback);
+        answerRepository.save(answer);
+
+        userAnswerStatsRepository.incrementUserAnswerStat(answer.getMemberId(), answer.getStatus());
+    }
 }

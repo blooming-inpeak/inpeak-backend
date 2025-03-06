@@ -66,17 +66,17 @@ class AnswerRepositoryCustomTest {
 
         // 테스트 데이터 저장
         List.of(
-            createAnswer("정답1", true, 120L, AnswerStatus.CORRECT),
-            createAnswer("정답2", false, 200L, AnswerStatus.CORRECT),
-            createAnswer("오답1", false, 150L, AnswerStatus.INCORRECT),
-            createAnswer("스킵된 답변", false, 100L, AnswerStatus.SKIPPED)
+            createAnswer("정답1", true, 120, AnswerStatus.CORRECT),
+            createAnswer("정답2", false, 200, AnswerStatus.CORRECT),
+            createAnswer("오답1", false, 150, AnswerStatus.INCORRECT),
+            createAnswer("스킵된 답변", false, 100, AnswerStatus.SKIPPED)
         ).forEach(entityManager::persist);
 
         entityManager.flush();
     }
 
 
-    private Answer createAnswer(String userAnswer, boolean isUnderstood, Long runningTime,
+    private Answer createAnswer(String userAnswer, boolean isUnderstood, int runningTime,
         AnswerStatus status) {
         return Answer.builder()
             .questionId(testQuestion.getId())

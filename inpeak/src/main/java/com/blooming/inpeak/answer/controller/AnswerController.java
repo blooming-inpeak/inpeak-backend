@@ -1,6 +1,7 @@
 package com.blooming.inpeak.answer.controller;
 
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
+import com.blooming.inpeak.answer.dto.request.AnswerCreateRequest;
 import com.blooming.inpeak.answer.dto.request.AnswerSkipRequest;
 import com.blooming.inpeak.answer.dto.request.CorrectAnswerFilterRequest;
 import com.blooming.inpeak.answer.dto.request.IncorrectAnswerFilterRequest;
@@ -73,5 +74,14 @@ public class AnswerController {
     ) {
         return ResponseEntity.ok(
             answerPresignedUrlService.getPreSignedUrl(memberPrincipal.id(), startDate, extension));
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<String> createAnswer(
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
+        @RequestBody AnswerCreateRequest answerCreateRequest
+    ) {
+        answerService.createAnswer(answerCreateRequest.toCommand(memberPrincipal.id()));
+        return ResponseEntity.ok().build();
     }
 }
