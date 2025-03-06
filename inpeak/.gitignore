@@ -14,6 +14,9 @@ src/main/resources/application-oauth.yml
 ### AWS ###
 src/main/resources/application-aws.yml
 
+### OpenAI ###
+src/main/resources/application-openai.yml
+
 ### STS ###
 .apt_generated
 .classpath
