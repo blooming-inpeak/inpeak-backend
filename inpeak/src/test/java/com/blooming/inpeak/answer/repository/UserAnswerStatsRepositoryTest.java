@@ -37,7 +37,6 @@ class UserAnswerStatsRepositoryTest extends IntegrationTestSupport {
     @Test
     @DisplayName("사용자 정답 통계 증가 테스트 - 기존 값 증가")
     void incrementUserAnswerStat_ShouldIncreaseExistingValue() {
-        // ✅ Given: 이미 1회 증가된 상태
         Long memberId = 2L;
         AnswerStatus status = AnswerStatus.INCORRECT;
         String key = "user:" + memberId;
