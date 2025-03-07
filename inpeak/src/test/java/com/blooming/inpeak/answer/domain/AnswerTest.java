@@ -1,5 +1,7 @@
 package com.blooming.inpeak.answer.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.blooming.inpeak.answer.dto.command.AnswerCreateCommand;
@@ -56,5 +58,36 @@ class AnswerTest {
         assertEquals(command.videoURL(), answer.getVideoURL());
         assertEquals(command.time(), answer.getRunningTime());
         assertFalse(answer.isUnderstood());
+    }
+
+    @DisplayName("정답 상태일 때 사용자가 이해 여부를 업데이트할 수 있다.")
+    @Test
+    void setUnderstood_ShouldUpdate_WhenStatusIsCorrect() {
+        // given
+        Answer answer = Answer.builder()
+            .status(AnswerStatus.CORRECT) // 정답 상태로 설정
+            .isUnderstood(false)
+            .build();
+
+        // when
+        answer.setUnderstood(true);
+
+        // then
+        assertThat(answer.isUnderstood()).isTrue();
+    }
+
+    @DisplayName("정답이 아닌 상태에서 이해 여부를 업데이트하려고 하면 예외가 발생해야 한다.")
+    @Test
+    void setUnderstood_ShouldThrowException_WhenStatusIsNotCorrect() {
+        // given
+        Answer answer = Answer.builder()
+            .status(AnswerStatus.INCORRECT) // 정답이 아닌 상태
+            .isUnderstood(false)
+            .build();
+
+        // when, then
+        assertThatThrownBy(() -> answer.setUnderstood(true))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("정답인 경우에만 이해 여부를 업데이트할 수 있습니다.");
     }
 }

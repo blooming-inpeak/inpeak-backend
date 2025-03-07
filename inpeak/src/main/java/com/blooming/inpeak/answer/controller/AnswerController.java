@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -82,6 +83,15 @@ public class AnswerController {
         @RequestBody AnswerCreateRequest answerCreateRequest
     ) {
         answerService.createAnswer(answerCreateRequest.toCommand(memberPrincipal.id()));
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/understood")
+    public ResponseEntity<Void> updateUnderstood(
+        @RequestParam Long answerId,
+        @RequestParam boolean isUnderstood
+    ) {
+        answerService.updateUnderstood(answerId, isUnderstood);
         return ResponseEntity.ok().build();
     }
 }

@@ -108,4 +108,18 @@ public class AnswerService {
 
         userAnswerStatsRepository.incrementUserAnswerStat(answer.getMemberId(), answer.getStatus());
     }
+
+    /**
+     * 답변을 이해했는지 여부를 업데이트하는 메서드
+     *
+     * @param answerId     답변 ID
+     * @param isUnderstood 사용자가 이해했는지 여부
+     */
+    public void updateUnderstood(Long answerId, boolean isUnderstood) {
+        Answer answer = answerRepository.findById(answerId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 답변이 존재하지 않습니다."));
+
+        answer.setUnderstood(isUnderstood);
+        answerRepository.save(answer);
+    }
 }

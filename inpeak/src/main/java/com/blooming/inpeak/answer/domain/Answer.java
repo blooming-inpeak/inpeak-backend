@@ -134,4 +134,17 @@ public class Answer extends BaseEntity {
             .map(String::trim) // 각 문자열에 trim 적용
             .toArray(String[]::new);
     }
+
+    /**
+     * 사용자가 답변을 이해했는지 여부를 업데이트하는 메서드
+     *
+     * @param isUnderstood 사용자가 이해했는지 여부
+     */
+    public void setUnderstood(boolean isUnderstood) {
+        if (this.status != AnswerStatus.CORRECT) {
+            throw new IllegalStateException("정답인 경우에만 이해 여부를 업데이트할 수 있습니다.");
+        }
+
+        this.isUnderstood = isUnderstood;
+    }
 }

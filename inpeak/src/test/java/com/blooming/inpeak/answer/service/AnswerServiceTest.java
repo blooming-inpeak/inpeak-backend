@@ -160,4 +160,43 @@ class AnswerServiceTest extends IntegrationTestSupport {
         assertThat(response.startDate()).isEqualTo(date);
         assertThat(response.answers()).hasSize(2);
     }
+
+    @DisplayName("updateUnderstood()는 사용자의 이해 여부를 업데이트해야 한다.")
+    @Transactional
+    @Test
+    void updateUnderstood_ShouldUpdateAnswerStatus() {
+        // given
+        Long memberId = 1L;
+        Interview interview = interviewRepository.save(Interview.of(memberId, LocalDate.now()));
+        Question question = questionRepository.save(
+            Question.of("자바의 GC 동작 방식", QuestionType.SPRING, "모범 답변"));
+
+        createAnswer(memberId, question.getId(), interview.getId(), "GC에 대한 설명", 120,
+            AnswerStatus.CORRECT, false);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Answer answer = answerRepository.findAll().get(0);
+
+        // when
+        answerService.updateUnderstood(answer.getId(), true);
+
+        // then
+        Answer updatedAnswer = answerRepository.findById(answer.getId()).orElseThrow();
+        assertThat(updatedAnswer.isUnderstood()).isTrue();
+    }
+
+    @DisplayName("존재하지 않는 답변 ID로 updateUnderstood()를 호출하면 예외가 발생해야 한다.")
+    @Transactional
+    @Test
+    void updateUnderstood_ShouldThrowException_WhenAnswerNotFound() {
+        // given
+        Long nonExistingId = 9999L;
+
+        // when & then
+        assertThatThrownBy(() -> answerService.updateUnderstood(nonExistingId, true))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("해당 답변이 존재하지 않습니다.");
+    }
 }
