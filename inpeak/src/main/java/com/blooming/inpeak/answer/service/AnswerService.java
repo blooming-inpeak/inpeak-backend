@@ -122,4 +122,18 @@ public class AnswerService {
         answer.setUnderstood(isUnderstood);
         answerRepository.save(answer);
     }
+
+    /**
+     * 답변에 코멘트를 추가하는 메서드
+     *
+     * @param answerId 답변 ID
+     * @param comment  코멘트
+     */
+    public void updateComment(Long answerId, String comment) {
+        Answer answer = answerRepository.findById(answerId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 답변이 존재하지 않습니다."));
+
+        answer.setComment(comment);
+        answerRepository.save(answer);
+    }
 }

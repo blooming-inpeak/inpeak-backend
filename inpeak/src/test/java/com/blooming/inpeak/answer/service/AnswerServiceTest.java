@@ -58,9 +58,9 @@ class AnswerServiceTest extends IntegrationTestSupport {
         command = new AnswerFilterCommand(memberId, "DESC", true, AnswerStatus.CORRECT, 0, 5);
     }
 
-    private void createAnswer(Long memberId, Long questionId, Long interviewId, String userAnswer,
+    private Answer createAnswer(Long memberId, Long questionId, Long interviewId, String userAnswer,
         int runningTime, AnswerStatus status, boolean isUnderstood) {
-        answerRepository.save(Answer.builder()
+        return answerRepository.save(Answer.builder()
             .questionId(questionId)
             .memberId(memberId)
             .interviewId(interviewId)
@@ -196,6 +196,51 @@ class AnswerServiceTest extends IntegrationTestSupport {
 
         // when & then
         assertThatThrownBy(() -> answerService.updateUnderstood(nonExistingId, true))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("해당 답변이 존재하지 않습니다.");
+    }
+
+    @DisplayName("updateComment()는 답변의 코멘트를 정상적으로 변경해야 한다.")
+    @Transactional
+    @Test
+    void updateComment_ShouldUpdateCommentSuccessfully() {
+        // given
+        Long memberId = 1L;
+        String originalComment = "이해가 안 가는 부분이 있어요.";
+        String updatedComment = "이해가 안 가는 부분이 있어요. 더 설명해주세요.";
+
+        Interview interview = interviewRepository.save(Interview.of(memberId, LocalDate.now()));
+        Question question = questionRepository.save(
+            Question.of("자바의 GC 동작 방식", QuestionType.SPRING, "모범 답변"));
+
+        Answer answer = createAnswer(memberId, question.getId(), interview.getId(), "GC에 대한 설명", 120,
+            AnswerStatus.CORRECT, false);
+
+        answer.setComment(originalComment);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Answer newAnswer = answerRepository.findAll().get(0);
+
+        // when
+        answerService.updateComment(newAnswer.getId(), updatedComment);
+
+        // then
+        Answer updatedAnswer = answerRepository.findById(newAnswer.getId()).orElseThrow();
+        assertThat(updatedAnswer.getComment()).isEqualTo(updatedComment);
+    }
+
+    @DisplayName("updateComment()는 존재하지 않는 답변 ID로 요청하면 예외를 발생시켜야 한다.")
+    @Transactional
+    @Test
+    void updateComment_ShouldThrowException_WhenAnswerNotFound() {
+        // given
+        Long nonExistingId = 9999L;
+        String comment = "개발 힘들다..";
+
+        // when & then
+        assertThatThrownBy(() -> answerService.updateComment(nonExistingId, comment))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("해당 답변이 존재하지 않습니다.");
     }

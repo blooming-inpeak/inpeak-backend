@@ -94,4 +94,13 @@ public class AnswerController {
         answerService.updateUnderstood(answerId, isUnderstood);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/comment")
+    public ResponseEntity<Void> updateComment(
+        @RequestParam Long answerId,
+        @RequestParam String comment
+    ) {
+        answerService.updateComment(answerId, comment);
+        return ResponseEntity.ok().build();
+    }
 }

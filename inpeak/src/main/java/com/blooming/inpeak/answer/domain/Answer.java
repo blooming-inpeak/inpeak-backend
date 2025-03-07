@@ -147,4 +147,13 @@ public class Answer extends BaseEntity {
 
         this.isUnderstood = isUnderstood;
     }
+
+    /**
+     * 답변에 코멘트를 추가하는 메서드
+     *
+     * @param comment 코멘트
+     */
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
 }
