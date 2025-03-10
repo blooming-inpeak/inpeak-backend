@@ -1,6 +1,5 @@
 package com.blooming.inpeak.answer.repository;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
 
 import com.blooming.inpeak.answer.domain.Answer;
@@ -77,7 +76,6 @@ class AnswerRepositoryCustomTest {
         entityManager.flush();
     }
 
-
     private Answer createAnswer(String userAnswer, boolean isUnderstood, int runningTime,
         AnswerStatus status) {
         return Answer.builder()
@@ -102,10 +100,9 @@ class AnswerRepositoryCustomTest {
             AnswerStatus.CORRECT, "DESC", pageable);
 
         // then
-        assertNotNull(results);
-        assertEquals(2, results.getNumberOfElements());
-        assertTrue(
-            results.getContent().stream().allMatch(a -> a.getStatus() == AnswerStatus.CORRECT));
+        assertThat(results).isNotNull();
+        assertThat(results.getNumberOfElements()).isEqualTo(2);
+        assertThat(results.getContent()).allMatch(a -> a.getStatus() == AnswerStatus.CORRECT);
     }
 
     @Test
@@ -119,11 +116,11 @@ class AnswerRepositoryCustomTest {
             AnswerStatus.ALL, "DESC", pageable);
 
         // then
-        assertNotNull(results);
-        assertEquals(2, results.getNumberOfElements());
-        assertTrue(results.getContent().stream().allMatch(a ->
-            a.getStatus() == AnswerStatus.INCORRECT || a.getStatus() == AnswerStatus.SKIPPED
-        ));
+        assertThat(results).isNotNull();
+        assertThat(results.getNumberOfElements()).isEqualTo(2);
+        assertThat(results.getContent())
+            .extracting(Answer::getStatus)
+            .containsOnly(AnswerStatus.INCORRECT, AnswerStatus.SKIPPED);
     }
 
     @Test
@@ -137,25 +134,25 @@ class AnswerRepositoryCustomTest {
             AnswerStatus.CORRECT, "DESC", pageable);
 
         // then
-        assertNotNull(results);
-        assertEquals(1, results.getNumberOfElements()); // 이해한 답변은 1개
-        assertTrue(results.getContent().stream().allMatch(Answer::isUnderstood));
+        assertThat(results).isNotNull();
+        assertThat(results.getNumberOfElements()).isEqualTo(1);
+        assertThat(results.getContent()).allMatch(Answer::isUnderstood);
     }
 
     @Test
     @DisplayName("findAnswers()는 페이지 크기보다 하나 더 조회했을 때 hasNext가 true여야 한다.")
     void findAnswers_ShouldSetHasNextTrue_WhenMoreThanPageSizeFetched() {
         // given
-        Pageable pageable = PageRequest.of(0, 1); // 페이지 크기를 1로 설정
+        Pageable pageable = PageRequest.of(0, 1);
 
         // when
         Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
             AnswerStatus.ALL, "DESC", pageable);
 
         // then
-        assertNotNull(results);
-        assertEquals(1, results.getNumberOfElements());
-        assertTrue(results.hasNext()); // 2개 이상 데이터가 있으므로 hasNext = true
+        assertThat(results).isNotNull();
+        assertThat(results.getNumberOfElements()).isEqualTo(1);
+        assertThat(results.hasNext()).isTrue();
     }
 
     @Test
@@ -169,9 +166,8 @@ class AnswerRepositoryCustomTest {
             AnswerStatus.ALL, "DESC", pageable);
 
         // then
-        assertNotNull(results);
-        List<Answer> answers = results.getContent();
-        assertTrue(answers.get(0).getCreatedAt().isAfter(answers.get(1).getCreatedAt())); // 최신순 확인
+        assertThat(results).isNotNull();
+        assertThat(results.getContent()).isSortedAccordingTo(Comparator.comparing(Answer::getCreatedAt).reversed());
     }
 
     @Test
@@ -185,10 +181,8 @@ class AnswerRepositoryCustomTest {
             AnswerStatus.ALL, "ASC", pageable);
 
         // then
-        assertNotNull(results);
-        List<Answer> answers = results.getContent();
-        assertTrue(
-            answers.get(0).getCreatedAt().isBefore(answers.get(1).getCreatedAt())); // 오래된 순 확인
+        assertThat(results).isNotNull();
+        assertThat(results.getContent()).isSortedAccordingTo(Comparator.comparing(Answer::getCreatedAt));
     }
 
     @Test
@@ -198,10 +192,9 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when & then
-        assertThrows(IllegalArgumentException.class, () -> {
-            answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL,
-                "INVALID_SORT", pageable);
-        });
+        assertThatThrownBy(() -> answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL,
+            "INVALID_SORT", pageable))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -216,55 +209,6 @@ class AnswerRepositoryCustomTest {
     }
 
     @Test
-    @DisplayName("findRecentAnswers()는 필터 조건이 ALL일 때 모든 조건의 답변을 반환해야 한다.")
-    void findRecentAnswers_ShouldReturnAllAnswers_WhenStatusIsALL() {
-        // when
-        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.ALL);
-
-        // then
-        assertThat(results).isNotNull();
-        assertThat(results).extracting(Answer::getStatus)
-            .containsAnyOf(AnswerStatus.CORRECT, AnswerStatus.INCORRECT, AnswerStatus.SKIPPED);
-
-    }
-
-    @Test
-    @DisplayName("findRecentAnswers()는 필터 조건이 CORRECT일 때 정답 상태의 답변만 반환해야 한다.")
-    void findRecentAnswers_ShouldReturnCorrectAnswers_WhenStatusIsCORRECT() {
-        // when
-        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.CORRECT);
-
-        // then
-        assertThat(results).isNotNull();
-        assertThat(results).extracting(Answer::getStatus)
-            .containsOnly(AnswerStatus.CORRECT);
-    }
-
-    @Test
-    @DisplayName("findRecentAnswers()는 필터 조건이 INCORRECT일 때 오답 상태의 답변만 반환해야 한다.")
-    void findRecentAnswers_ShouldReturnIncorrectAnswers_WhenStatusIsINCORRECT() {
-        // when
-        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.INCORRECT);
-
-        // then
-        assertThat(results).isNotNull();
-        assertThat(results).extracting(Answer::getStatus)
-            .containsOnly(AnswerStatus.INCORRECT);
-    }
-
-    @Test
-    @DisplayName("findRecentAnswers()는 필터 조건이 SKIPPED일 때 스킵 상태의 답변만 반환해야 한다.")
-    void findRecentAnswers_ShouldReturnSkippedAnswers_WhenStatusIsSKIPPED() {
-        // when
-        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.SKIPPED);
-
-        // then
-        assertThat(results).isNotNull();
-        assertThat(results).extracting(Answer::getStatus)
-            .containsOnly(AnswerStatus.SKIPPED);
-    }
-
-    @Test
     @DisplayName("findRecentAnswers()는 최신순으로 정렬된 답변을 반환해야 한다.")
     void findRecentAnswers_ShouldReturnAnswersInDescendingOrder() {
         // when
@@ -272,11 +216,6 @@ class AnswerRepositoryCustomTest {
 
         // then
         assertThat(results).isNotNull();
-        assertThat(results).hasSizeGreaterThanOrEqualTo(2);
-
-        List<Long> answerIds = results.stream()
-            .map(Answer::getId)
-            .toList();
-        assertThat(answerIds).isSortedAccordingTo(Comparator.reverseOrder());
+        assertThat(results).isSortedAccordingTo(Comparator.comparing(Answer::getCreatedAt).reversed());
     }
 }

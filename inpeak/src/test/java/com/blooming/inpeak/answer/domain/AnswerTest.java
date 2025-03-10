@@ -1,8 +1,6 @@
 package com.blooming.inpeak.answer.domain;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import com.blooming.inpeak.answer.dto.command.AnswerCreateCommand;
 import org.junit.jupiter.api.DisplayName;
@@ -22,11 +20,11 @@ class AnswerTest {
         Answer skippedAnswer = Answer.ofSkipped(memberId, questionId, interviewId);
 
         // ✅ Then
-        assertNotNull(skippedAnswer);
-        assertEquals(questionId, skippedAnswer.getQuestionId());
-        assertEquals(memberId, skippedAnswer.getMemberId());
-        assertEquals(interviewId, skippedAnswer.getInterviewId());
-        assertEquals(AnswerStatus.SKIPPED, skippedAnswer.getStatus()); // 스킵된 상태 설정
+        assertThat(skippedAnswer).isNotNull();
+        assertThat(skippedAnswer.getQuestionId()).isEqualTo(questionId);
+        assertThat(skippedAnswer.getMemberId()).isEqualTo(memberId);
+        assertThat(skippedAnswer.getInterviewId()).isEqualTo(interviewId);
+        assertThat(skippedAnswer.getStatus()).isEqualTo(AnswerStatus.SKIPPED); // 스킵된 상태 설정
     }
 
     @DisplayName("정상적인 답변 생성 및 문자열 트림 검증 테스트")
@@ -44,20 +42,20 @@ class AnswerTest {
         Answer answer = Answer.of(command, feedback);
 
         // ✅ Then (검증)
-        assertNotNull(answer);
+        assertThat(answer).isNotNull();
 
         // 🔹 splitAndTrimText() 결과가 정상적으로 반영되었는지 검증
-        assertEquals("User's answer", answer.getUserAnswer());  // 앞뒤 공백 제거됨
-        assertEquals(AnswerStatus.CORRECT, answer.getStatus()); // Enum 변환 검증
-        assertEquals("AI feedback message", answer.getAIAnswer()); // 공백 제거됨
+        assertThat(answer.getUserAnswer()).isEqualTo("User's answer"); // 앞뒤 공백 제거됨
+        assertThat(answer.getStatus()).isEqualTo(AnswerStatus.CORRECT); // Enum 변환 검증
+        assertThat(answer.getAIAnswer()).isEqualTo("AI feedback message"); // 공백 제거됨
 
         // 🔹 기타 Answer 필드 검증
-        assertEquals(command.questionId(), answer.getQuestionId());
-        assertEquals(command.memberId(), answer.getMemberId());
-        assertEquals(command.interviewId(), answer.getInterviewId());
-        assertEquals(command.videoURL(), answer.getVideoURL());
-        assertEquals(command.time(), answer.getRunningTime());
-        assertFalse(answer.isUnderstood());
+        assertThat(answer.getQuestionId()).isEqualTo(command.questionId());
+        assertThat(answer.getMemberId()).isEqualTo(command.memberId());
+        assertThat(answer.getInterviewId()).isEqualTo(command.interviewId());
+        assertThat(answer.getVideoURL()).isEqualTo(command.videoURL());
+        assertThat(answer.getRunningTime()).isEqualTo(command.time());
+        assertThat(answer.isUnderstood()).isFalse();
     }
 
     @DisplayName("정답 상태일 때 사용자가 이해 여부를 업데이트할 수 있다.")
