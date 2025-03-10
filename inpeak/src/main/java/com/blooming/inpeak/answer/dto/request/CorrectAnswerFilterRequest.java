@@ -9,8 +9,8 @@ import jakarta.validation.constraints.NotNull;
 public record CorrectAnswerFilterRequest(
     @NotNull
     String sortType,
-    @NotNull
-    boolean isUnderstood,
+
+    Boolean isUnderstood,
     @Min(0)
     @NotNull
     int page

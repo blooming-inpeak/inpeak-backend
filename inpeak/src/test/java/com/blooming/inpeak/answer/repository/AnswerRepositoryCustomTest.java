@@ -67,16 +67,16 @@ class AnswerRepositoryCustomTest {
 
         // 테스트 데이터 저장
         List.of(
-            createAnswer("정답1", true, 120, AnswerStatus.CORRECT),
-            createAnswer("정답2", false, 200, AnswerStatus.CORRECT),
-            createAnswer("오답1", false, 150, AnswerStatus.INCORRECT),
-            createAnswer("스킵된 답변", false, 100, AnswerStatus.SKIPPED)
+            createAnswer("정답1", true, 120L, AnswerStatus.CORRECT),
+            createAnswer("정답2", false, 200L, AnswerStatus.CORRECT),
+            createAnswer("오답1", false, 150L, AnswerStatus.INCORRECT),
+            createAnswer("스킵된 답변", false, 100L, AnswerStatus.SKIPPED)
         ).forEach(entityManager::persist);
 
         entityManager.flush();
     }
 
-    private Answer createAnswer(String userAnswer, boolean isUnderstood, int runningTime,
+    private Answer createAnswer(String userAnswer, boolean isUnderstood, Long runningTime,
         AnswerStatus status) {
         return Answer.builder()
             .questionId(testQuestion.getId())
@@ -218,4 +218,22 @@ class AnswerRepositoryCustomTest {
         assertThat(results).isNotNull();
         assertThat(results).isSortedAccordingTo(Comparator.comparing(Answer::getCreatedAt).reversed());
     }
+
+    @Test
+    @DisplayName("findAnswers()는 isUnderstood가 false일 경우 이해하지 못한 정답만 반환해야 한다.")
+    void findAnswers_ShouldReturnOnlyNotUnderstoodCorrectAnswers_WhenIsUnderstoodIsFalse() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), false,
+            AnswerStatus.CORRECT, "DESC", pageable);
+
+        // then
+        assertThat(results).isNotNull();
+        assertThat(results.getNumberOfElements()).isEqualTo(1); // 이해하지 못한 정답은 1개
+        assertThat(results.getContent()).allMatch(answer ->
+            !answer.isUnderstood() && answer.getStatus() == AnswerStatus.CORRECT);
+    }
+
 }

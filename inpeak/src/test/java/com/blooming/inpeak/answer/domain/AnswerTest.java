@@ -32,7 +32,7 @@ class AnswerTest {
     void answerOf_ShouldCreateAnswer_AndTrimCorrectly() {
         // ✅ Given (테스트 데이터 준비)
         AnswerCreateCommand command = new AnswerCreateCommand(
-            "audioFile123", 10, 1L, 1L, 1L, "videoURL123"
+            "audioFile123", 10L, 1L, 1L, 1L, "videoURL123"
         );
 
         // ✅ 문자열에 공백 포함 (trim 동작 확인)

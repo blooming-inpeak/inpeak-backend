@@ -24,11 +24,11 @@ public class AnswerRepositoryCustom {
     /**
      * 답변 리스트를 동적으로 조회하는 메서드
      *
-     * @param memberId 사용자 Id
+     * @param memberId     사용자 Id
      * @param isUnderstood 이해 여부
-     * @param status 답변 분류 지정
-     * @param sortType 정렬 조건
-     * @param pageable 페이징 정보
+     * @param status       답변 분류 지정
+     * @param sortType     정렬 조건
+     * @param pageable     페이징 정보
      * @return question, interview까지 페치 조인하여 전체 답변 리스트를 반환
      */
     public Slice<Answer> findAnswers(
@@ -64,7 +64,7 @@ public class AnswerRepositoryCustom {
      * 최근 답변 리스트를 조회하는 메서드
      *
      * @param memberId 사용자 Id
-     * @param status 답변 분류 지정
+     * @param status   답변 분류 지정
      * @return 최근 3개의 답변 리스트를 반환
      */
     public List<Answer> findRecentAnswers(Long memberId, AnswerStatus status) {
@@ -94,11 +94,13 @@ public class AnswerRepositoryCustom {
     }
 
     // 각 필터 생성
-    private BooleanExpression buildFilter(Long memberId, Boolean isUnderstood, AnswerStatus status) {
+    private BooleanExpression buildFilter(Long memberId, Boolean isUnderstood,
+        AnswerStatus status) {
         QAnswer answer = QAnswer.answer;
 
         BooleanExpression memberFilter = answer.memberId.eq(memberId);
-        BooleanExpression understoodFilter = (isUnderstood != null) ? answer.isUnderstood.eq(isUnderstood) : null;
+        BooleanExpression understoodFilter =
+            (isUnderstood != null) ? answer.isUnderstood.eq(isUnderstood) : null;
         BooleanExpression statusFilter = getStatusFilter(status);
 
         return allOf(memberFilter, understoodFilter, statusFilter);
@@ -109,7 +111,8 @@ public class AnswerRepositoryCustom {
         QAnswer answer = QAnswer.answer;
 
         BooleanExpression memberFilter = answer.memberId.eq(memberId);
-        BooleanExpression statusFilter = (status == AnswerStatus.ALL) ? null : answer.status.eq(status);
+        BooleanExpression statusFilter =
+            (status == AnswerStatus.ALL) ? null : answer.status.eq(status);
 
         return allOf(memberFilter, statusFilter);
     }
@@ -118,7 +121,9 @@ public class AnswerRepositoryCustom {
     private BooleanExpression getStatusFilter(AnswerStatus status) {
         QAnswer answer = QAnswer.answer;
 
-        if (status == null) return null;
+        if (status == null) {
+            return null;
+        }
         if (status == AnswerStatus.ALL) {
             return answer.status.in(AnswerStatus.INCORRECT, AnswerStatus.SKIPPED);
         }

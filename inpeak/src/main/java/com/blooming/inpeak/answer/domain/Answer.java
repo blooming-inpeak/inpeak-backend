@@ -55,7 +55,7 @@ public class Answer extends BaseEntity {
 
     private String videoURL;
 
-    private int runningTime;
+    private Long runningTime;
 
     private String comment;
 
@@ -70,7 +70,7 @@ public class Answer extends BaseEntity {
     @Builder
     private Answer(Long questionId, Long memberId, Long interviewId, String userAnswer,
         String videoURL,
-        int runningTime, String comment, Boolean isUnderstood, AnswerStatus status,
+        Long runningTime, String comment, Boolean isUnderstood, AnswerStatus status,
         String AIAnswer) {
         this.questionId = questionId;
         this.memberId = memberId;

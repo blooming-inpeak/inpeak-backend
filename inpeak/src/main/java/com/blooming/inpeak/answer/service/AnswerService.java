@@ -4,6 +4,7 @@ import com.blooming.inpeak.answer.domain.Answer;
 import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.answer.dto.command.AnswerCreateCommand;
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
+import com.blooming.inpeak.answer.dto.response.AnswerIDResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
@@ -43,9 +44,11 @@ public class AnswerService {
      * @param interviewId 인터뷰 ID
      */
     @Transactional
-    public void skipAnswer(Long memberId, Long questionId, Long interviewId) {
+    public AnswerIDResponse skipAnswer(Long memberId, Long questionId, Long interviewId) {
         Answer skippedAnswer = Answer.ofSkipped(memberId, questionId, interviewId);
         answerRepository.save(skippedAnswer);
+
+        return new AnswerIDResponse(skippedAnswer.getId());
     }
 
     /**
@@ -115,7 +118,7 @@ public class AnswerService {
      *
      * @param command 답변 생성 명령
      */
-    public void createAnswer(AnswerCreateCommand command) {
+    public AnswerIDResponse createAnswer(AnswerCreateCommand command) {
         Question question = questionRepository.findById(command.questionId())
             .orElseThrow(() -> new IllegalArgumentException("해당 질문이 존재하지 않습니다."));
 
@@ -125,6 +128,8 @@ public class AnswerService {
         answerRepository.save(answer);
 
         userAnswerStatsRepository.incrementUserAnswerStat(answer.getMemberId(), answer.getStatus());
+
+        return new AnswerIDResponse(answer.getId());
     }
 
     /**

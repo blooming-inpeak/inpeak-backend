@@ -12,7 +12,7 @@ public record AnswerFilterCommand(
 
     String sortType,
 
-    boolean isUnderstood,
+    Boolean isUnderstood,
 
     AnswerStatus status,
 

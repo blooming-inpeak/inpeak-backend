@@ -4,8 +4,11 @@ import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
 import com.blooming.inpeak.answer.dto.request.AnswerCreateRequest;
 import com.blooming.inpeak.answer.dto.request.AnswerSkipRequest;
+import com.blooming.inpeak.answer.dto.request.CommentUpdateRequest;
 import com.blooming.inpeak.answer.dto.request.CorrectAnswerFilterRequest;
 import com.blooming.inpeak.answer.dto.request.IncorrectAnswerFilterRequest;
+import com.blooming.inpeak.answer.dto.request.UnderstoodUpdateRequest;
+import com.blooming.inpeak.answer.dto.response.AnswerIDResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerPresignedUrlResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
@@ -35,12 +38,12 @@ public class AnswerController {
     private final AnswerPresignedUrlService answerPresignedUrlService;
 
     @PostMapping("/skip")
-    public ResponseEntity<Void> skipAnswer(
+    public ResponseEntity<AnswerIDResponse> skipAnswer(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @RequestBody AnswerSkipRequest request
     ) {
-        answerService.skipAnswer(memberPrincipal.id(), request.questionId(), request.interviewId());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        AnswerIDResponse response = answerService.skipAnswer(memberPrincipal.id(), request.questionId(), request.interviewId());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/correct")
@@ -88,29 +91,27 @@ public class AnswerController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<String> createAnswer(
+    public ResponseEntity<AnswerIDResponse> createAnswer(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @RequestBody AnswerCreateRequest answerCreateRequest
     ) {
-        answerService.createAnswer(answerCreateRequest.toCommand(memberPrincipal.id()));
-        return ResponseEntity.ok().build();
+        AnswerIDResponse response = answerService.createAnswer(answerCreateRequest.toCommand(memberPrincipal.id()));
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/understood")
     public ResponseEntity<Void> updateUnderstood(
-        @RequestParam Long answerId,
-        @RequestParam boolean isUnderstood
+        @RequestBody UnderstoodUpdateRequest request
     ) {
-        answerService.updateUnderstood(answerId, isUnderstood);
+        answerService.updateUnderstood(request.answerId(), request.isUnderstood());
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/comment")
     public ResponseEntity<Void> updateComment(
-        @RequestParam Long answerId,
-        @RequestParam String comment
+        @RequestBody CommentUpdateRequest request
     ) {
-        answerService.updateComment(answerId, comment);
+        answerService.updateComment(request.answerId(), request.comment());
         return ResponseEntity.ok().build();
     }
 }

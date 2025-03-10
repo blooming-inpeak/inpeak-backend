@@ -5,7 +5,7 @@ import lombok.Builder;
 @Builder
 public record AnswerCreateCommand (
     String audioFile,
-    int time,
+    Long time,
     Long memberId,
     Long questionId,
     Long interviewId,

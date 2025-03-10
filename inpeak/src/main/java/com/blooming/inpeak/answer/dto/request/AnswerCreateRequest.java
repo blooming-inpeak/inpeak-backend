@@ -7,7 +7,7 @@ public record AnswerCreateRequest (
     @NotNull
     String audioFile,
     @NotNull
-    int time,
+    Long time,
     @NotNull
     Long questionId,
     @NotNull

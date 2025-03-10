@@ -60,7 +60,7 @@ class AnswerServiceTest extends IntegrationTestSupport {
     }
 
     private Answer createAnswer(Long memberId, Long questionId, Long interviewId, String userAnswer,
-        int runningTime, AnswerStatus status, boolean isUnderstood) {
+        Long runningTime, AnswerStatus status, boolean isUnderstood) {
         return answerRepository.save(Answer.builder()
             .questionId(questionId)
             .memberId(memberId)
@@ -85,9 +85,9 @@ class AnswerServiceTest extends IntegrationTestSupport {
         Question question2 = questionRepository.save(
             Question.of("Spring DI의 원리", QuestionType.SPRING, "모법 답변"));
 
-        createAnswer(memberId, question1.getId(), interview.getId(), "GC는 어쩌고 저쩌고", 120,
+        createAnswer(memberId, question1.getId(), interview.getId(), "GC는 어쩌고 저쩌고", 120L,
             AnswerStatus.CORRECT, true);
-        createAnswer(memberId, question2.getId(), interview.getId(), "Spring의 DI 원리가 어쩌고", 130,
+        createAnswer(memberId, question2.getId(), interview.getId(), "Spring의 DI 원리가 어쩌고", 130L,
             AnswerStatus.INCORRECT, false);
 
         entityManager.flush();
@@ -145,9 +145,9 @@ class AnswerServiceTest extends IntegrationTestSupport {
         Question question2 = questionRepository.save(
             Question.of("Spring DI의 원리", QuestionType.SPRING, "모법 답변"));
 
-        createAnswer(memberId, question1.getId(), interview.getId(), "GC는 어쩌고 저쩌고", 120,
+        createAnswer(memberId, question1.getId(), interview.getId(), "GC는 어쩌고 저쩌고", 120L,
             AnswerStatus.CORRECT, true);
-        createAnswer(memberId, question2.getId(), interview.getId(), "Spring의 DI 원리가 어쩌고", 130,
+        createAnswer(memberId, question2.getId(), interview.getId(), "Spring의 DI 원리가 어쩌고", 130L,
             AnswerStatus.INCORRECT, false);
 
         entityManager.flush();
@@ -178,20 +178,21 @@ class AnswerServiceTest extends IntegrationTestSupport {
         Question question4 = questionRepository.save(
             Question.of("스프링 질문4", QuestionType.SPRING, "모법 답변"));
 
-        createAnswer(memberId, question1.getId(), interview.getId(), "스프링 답변1", 120,
+        createAnswer(memberId, question1.getId(), interview.getId(), "스프링 답변1", 120L,
             AnswerStatus.CORRECT, true);
-        createAnswer(memberId, question2.getId(), interview.getId(), "스프링 답변2", 130,
+        createAnswer(memberId, question2.getId(), interview.getId(), "스프링 답변2", 130L,
             AnswerStatus.INCORRECT, false);
-        createAnswer(memberId, question3.getId(), interview.getId(), "스프링 답변3", 120,
+        createAnswer(memberId, question3.getId(), interview.getId(), "스프링 답변3", 120L,
             AnswerStatus.CORRECT, false);
-        createAnswer(memberId, question4.getId(), interview.getId(), "스프링 답변4", 120,
+        createAnswer(memberId, question4.getId(), interview.getId(), "스프링 답변4", 120L,
             AnswerStatus.CORRECT, true);
 
         entityManager.flush();
         entityManager.clear();
 
         // when
-        RecentAnswerListResponse response = answerService.getRecentAnswers(memberId, AnswerStatus.CORRECT);
+        RecentAnswerListResponse response = answerService.getRecentAnswers(memberId,
+            AnswerStatus.CORRECT);
 
         // then
         // 최대 3개의 답변만 반환해야 함
@@ -221,7 +222,7 @@ class AnswerServiceTest extends IntegrationTestSupport {
         Question question = questionRepository.save(
             Question.of("자바의 GC 동작 방식", QuestionType.SPRING, "모범 답변"));
 
-        createAnswer(memberId, question.getId(), interview.getId(), "GC에 대한 설명", 120,
+        createAnswer(memberId, question.getId(), interview.getId(), "GC에 대한 설명", 120L,
             AnswerStatus.CORRECT, false);
 
         entityManager.flush();
@@ -263,7 +264,8 @@ class AnswerServiceTest extends IntegrationTestSupport {
         Question question = questionRepository.save(
             Question.of("자바의 GC 동작 방식", QuestionType.SPRING, "모범 답변"));
 
-        Answer answer = createAnswer(memberId, question.getId(), interview.getId(), "GC에 대한 설명", 120,
+        Answer answer = createAnswer(memberId, question.getId(), interview.getId(), "GC에 대한 설명",
+            120L,
             AnswerStatus.CORRECT, false);
 
         answer.setComment(originalComment);
