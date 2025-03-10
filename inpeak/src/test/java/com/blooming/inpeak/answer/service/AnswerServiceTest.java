@@ -7,6 +7,8 @@ import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
+import com.blooming.inpeak.answer.dto.response.RecentAnswerListResponse;
+import com.blooming.inpeak.answer.dto.response.RecentAnswerResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
 import com.blooming.inpeak.interview.domain.Interview;
@@ -17,13 +19,12 @@ import com.blooming.inpeak.question.repository.QuestionRepository;
 import com.blooming.inpeak.support.IntegrationTestSupport;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.Comparator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -159,6 +160,55 @@ class AnswerServiceTest extends IntegrationTestSupport {
         assertThat(response).isNotNull();
         assertThat(response.startDate()).isEqualTo(date);
         assertThat(response.answers()).hasSize(2);
+    }
+
+    @DisplayName("getRecentAnswers()는 필터 조건에 따라 최대 3개의 최신순 답변 리스트를 반환해야 한다.")
+    @Transactional
+    @Test
+    void getRecentAnswers_ShouldReturnUpToThreeLatestFilteredAnswers() {
+        // given
+        Interview interview = interviewRepository.save(Interview.of(memberId, LocalDate.now()));
+
+        Question question1 = questionRepository.save(
+            Question.of("스프링 질문1", QuestionType.SPRING, "모법 답변"));
+        Question question2 = questionRepository.save(
+            Question.of("스프링 질문2", QuestionType.SPRING, "모법 답변"));
+        Question question3 = questionRepository.save(
+            Question.of("스프링 질문3", QuestionType.SPRING, "모법 답변"));
+        Question question4 = questionRepository.save(
+            Question.of("스프링 질문4", QuestionType.SPRING, "모법 답변"));
+
+        createAnswer(memberId, question1.getId(), interview.getId(), "스프링 답변1", 120,
+            AnswerStatus.CORRECT, true);
+        createAnswer(memberId, question2.getId(), interview.getId(), "스프링 답변2", 130,
+            AnswerStatus.INCORRECT, false);
+        createAnswer(memberId, question3.getId(), interview.getId(), "스프링 답변3", 120,
+            AnswerStatus.CORRECT, false);
+        createAnswer(memberId, question4.getId(), interview.getId(), "스프링 답변4", 120,
+            AnswerStatus.CORRECT, true);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // when
+        RecentAnswerListResponse response = answerService.getRecentAnswers(memberId, AnswerStatus.CORRECT);
+
+        // then
+        // 최대 3개의 답변만 반환해야 함
+        assertThat(response).isNotNull();
+        assertThat(response.recentAnswers()).hasSize(3);
+
+        // 필터 조건에 맞는 답변만 반환해야 함
+        assertThat(response.recentAnswers())
+            .extracting(RecentAnswerResponse::answerStatus)
+            .containsOnly(AnswerStatus.CORRECT);
+
+        // 최신순으로 정렬되어야 함
+        List<Long> answerIds = response.recentAnswers()
+            .stream()
+            .map(RecentAnswerResponse::answerId)
+            .toList();
+        assertThat(answerIds).isSortedAccordingTo(Comparator.reverseOrder());
     }
 
     @DisplayName("updateUnderstood()는 사용자의 이해 여부를 업데이트해야 한다.")

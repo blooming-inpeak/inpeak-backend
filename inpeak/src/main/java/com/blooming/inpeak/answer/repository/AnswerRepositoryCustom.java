@@ -60,6 +60,30 @@ public class AnswerRepositoryCustom {
         return toSlice(results, pageable);
     }
 
+    /**
+     * 최근 답변 리스트를 조회하는 메서드
+     *
+     * @param memberId 사용자 Id
+     * @param status 답변 분류 지정
+     * @return 최근 3개의 답변 리스트를 반환
+     */
+    public List<Answer> findRecentAnswers(Long memberId, AnswerStatus status) {
+        QAnswer answer = QAnswer.answer;
+        QQuestion question = QQuestion.question;
+
+        // 필터 조건 설정
+        BooleanExpression filter = buildFilter(memberId, status);
+
+        // QueryDSL 실행
+        return queryFactory
+            .selectFrom(answer)
+            .leftJoin(answer.question, question).fetchJoin()
+            .where(filter)
+            .orderBy(answer.createdAt.desc()) // 최신순 정렬
+            .limit(3) // 최근 3개만 가져오기
+            .fetch();
+    }
+
     // slice 리턴 형식을 맞추기 위한 메서드
     private Slice<Answer> toSlice(List<Answer> results, Pageable pageable) {
         boolean hasNext = results.size() > pageable.getPageSize();
@@ -78,6 +102,16 @@ public class AnswerRepositoryCustom {
         BooleanExpression statusFilter = getStatusFilter(status);
 
         return allOf(memberFilter, understoodFilter, statusFilter);
+    }
+
+    // 최근 답변 조회용 필터 생성
+    private BooleanExpression buildFilter(Long memberId, AnswerStatus status) {
+        QAnswer answer = QAnswer.answer;
+
+        BooleanExpression memberFilter = answer.memberId.eq(memberId);
+        BooleanExpression statusFilter = (status == AnswerStatus.ALL) ? null : answer.status.eq(status);
+
+        return allOf(memberFilter, statusFilter);
     }
 
     // ALL 일때는 오답노트 밖에 없어 이렇게 설정. 다른 메서드에서는 ALL 일때 전체 다 넣으면 될 듯

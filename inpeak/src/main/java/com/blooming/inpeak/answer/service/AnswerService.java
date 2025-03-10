@@ -7,6 +7,8 @@ import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
+import com.blooming.inpeak.answer.dto.response.RecentAnswerListResponse;
+import com.blooming.inpeak.answer.dto.response.RecentAnswerResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
 import com.blooming.inpeak.answer.repository.UserAnswerStatsRepository;
@@ -19,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,6 +91,23 @@ public class AnswerService {
             .orElseThrow(() -> new IllegalStateException("해당 날짜에 진행된 인터뷰가 없습니다."));
 
         return InterviewWithAnswersResponse.from(interview, answers);
+    }
+
+    /**
+     * 답변 상태를 기준으로 필터링하여 최근 3개의 답변 리스트를 반환하는 메서드
+     *
+     * @param memberId 회원 ID
+     * @param status   필터링 할 답변 상태
+     * @return 최근 3개의 답변 리스트
+     */
+    public RecentAnswerListResponse getRecentAnswers(Long memberId, AnswerStatus status) {
+        List<Answer> answers = answerRepositoryCustom.findRecentAnswers(memberId, status);
+
+        List<RecentAnswerResponse> responseList = answers.stream()
+            .map(RecentAnswerResponse::from)
+            .toList();
+
+        return RecentAnswerListResponse.from(responseList);
     }
 
     /**

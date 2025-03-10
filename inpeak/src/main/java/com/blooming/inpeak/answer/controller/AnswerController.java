@@ -1,5 +1,6 @@
 package com.blooming.inpeak.answer.controller;
 
+import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
 import com.blooming.inpeak.answer.dto.request.AnswerCreateRequest;
 import com.blooming.inpeak.answer.dto.request.AnswerSkipRequest;
@@ -8,6 +9,7 @@ import com.blooming.inpeak.answer.dto.request.IncorrectAnswerFilterRequest;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerPresignedUrlResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
+import com.blooming.inpeak.answer.dto.response.RecentAnswerListResponse;
 import com.blooming.inpeak.answer.service.AnswerPresignedUrlService;
 import com.blooming.inpeak.answer.service.AnswerService;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
@@ -65,6 +67,14 @@ public class AnswerController {
         @RequestParam LocalDate date
     ) {
         return ResponseEntity.ok(answerService.getAnswersByDate(memberPrincipal.id(), date));
+    }
+
+    @GetMapping("/recent")
+    public ResponseEntity<RecentAnswerListResponse> getRecentAnswers(
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
+        @RequestParam(required = false, defaultValue = "ALL") AnswerStatus status
+    ) {
+        return ResponseEntity.ok(answerService.getRecentAnswers(memberPrincipal.id(), status));
     }
 
     @GetMapping("/presigned-url")

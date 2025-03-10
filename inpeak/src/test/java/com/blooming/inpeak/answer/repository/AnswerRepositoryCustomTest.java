@@ -1,6 +1,7 @@
 package com.blooming.inpeak.answer.repository;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import com.blooming.inpeak.answer.domain.Answer;
 import com.blooming.inpeak.answer.domain.AnswerStatus;
@@ -13,6 +14,7 @@ import com.blooming.inpeak.common.config.queryDSL.QuerydslConfig;
 import com.blooming.inpeak.member.domain.Member;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -200,5 +202,81 @@ class AnswerRepositoryCustomTest {
             answerRepositoryCustom.findAnswers(testMember.getId(), null, AnswerStatus.ALL,
                 "INVALID_SORT", pageable);
         });
+    }
+
+    @Test
+    @DisplayName("findRecentAnswers()는 최대 3개의 답변을 반환해야 한다.")
+    void findRecentAnswers_ShouldReturnAtMostThreeAnswers() {
+        // when
+        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.ALL);
+
+        // then
+        assertThat(results).isNotNull();
+        assertThat(results).hasSizeLessThanOrEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("findRecentAnswers()는 필터 조건이 ALL일 때 모든 조건의 답변을 반환해야 한다.")
+    void findRecentAnswers_ShouldReturnAllAnswers_WhenStatusIsALL() {
+        // when
+        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.ALL);
+
+        // then
+        assertThat(results).isNotNull();
+        assertThat(results).extracting(Answer::getStatus)
+            .containsAnyOf(AnswerStatus.CORRECT, AnswerStatus.INCORRECT, AnswerStatus.SKIPPED);
+
+    }
+
+    @Test
+    @DisplayName("findRecentAnswers()는 필터 조건이 CORRECT일 때 정답 상태의 답변만 반환해야 한다.")
+    void findRecentAnswers_ShouldReturnCorrectAnswers_WhenStatusIsCORRECT() {
+        // when
+        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.CORRECT);
+
+        // then
+        assertThat(results).isNotNull();
+        assertThat(results).extracting(Answer::getStatus)
+            .containsOnly(AnswerStatus.CORRECT);
+    }
+
+    @Test
+    @DisplayName("findRecentAnswers()는 필터 조건이 INCORRECT일 때 오답 상태의 답변만 반환해야 한다.")
+    void findRecentAnswers_ShouldReturnIncorrectAnswers_WhenStatusIsINCORRECT() {
+        // when
+        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.INCORRECT);
+
+        // then
+        assertThat(results).isNotNull();
+        assertThat(results).extracting(Answer::getStatus)
+            .containsOnly(AnswerStatus.INCORRECT);
+    }
+
+    @Test
+    @DisplayName("findRecentAnswers()는 필터 조건이 SKIPPED일 때 스킵 상태의 답변만 반환해야 한다.")
+    void findRecentAnswers_ShouldReturnSkippedAnswers_WhenStatusIsSKIPPED() {
+        // when
+        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.SKIPPED);
+
+        // then
+        assertThat(results).isNotNull();
+        assertThat(results).extracting(Answer::getStatus)
+            .containsOnly(AnswerStatus.SKIPPED);
+    }
+
+    @Test
+    @DisplayName("findRecentAnswers()는 최신순으로 정렬된 답변을 반환해야 한다.")
+    void findRecentAnswers_ShouldReturnAnswersInDescendingOrder() {
+        // when
+        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.ALL);
+
+        // then
+        assertThat(results).isNotNull();
+        assertThat(results).hasSizeGreaterThanOrEqualTo(2);
+
+        List<Long> answerIds = results.stream()
+            .map(Answer::getId)
+            .toList();
+        assertThat(answerIds).isSortedAccordingTo(Comparator.reverseOrder());
     }
 }
