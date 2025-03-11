@@ -33,7 +33,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     // 회원 등록 관련 경로 상수로 정의
     private final List<String> REGISTRATION_PATHS = List.of(
         "/interest",
-        "/interest/registration"
+        "/interest/list"
     );
 
     @Override

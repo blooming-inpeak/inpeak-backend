@@ -12,4 +12,6 @@ public interface MemberInterestRepository extends JpaRepository<MemberInterest, 
 
     @Query("SELECT mi.interestType FROM MemberInterest mi WHERE mi.memberId = :memberId")
     List<InterestType> findInterestsByMemberId(Long memberId);
+
+    void deleteByMemberId(Long id);
 }

@@ -139,7 +139,7 @@ class TokenAuthenticationFilterTest {
         String userId = "1";
         Member mockMember = mock(Member.class);
 
-        given(request.getServletPath()).willReturn("/interest");
+        given(request.getServletPath()).willReturn("/interest/list");
         given(request.getHeader("Authorization")).willReturn("Bearer " + token);
         given(jwtTokenProvider.validateToken(token)).willReturn(true);
         given(jwtTokenProvider.getUserIdFromToken(token)).willReturn(userId);

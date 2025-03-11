@@ -115,4 +115,8 @@ public class Member extends BaseEntity implements UserDetails {
     public boolean registrationCompleted() {
         return registrationStatus == RegistrationStatus.COMPLETED;
     }
+
+    public void completeRegistration() {
+        this.registrationStatus = RegistrationStatus.COMPLETED;
+    }
 }
