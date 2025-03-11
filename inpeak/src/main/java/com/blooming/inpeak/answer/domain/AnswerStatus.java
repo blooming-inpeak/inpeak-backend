@@ -1,9 +1,17 @@
 package com.blooming.inpeak.answer.domain;
 
-public enum AnswerStatus {
-    CORRECT, //정답
-    INCORRECT, // 오답
-    SKIPPED, // 포기
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-    ALL // 전체
+@Getter
+@RequiredArgsConstructor
+public enum AnswerStatus {
+
+    CORRECT(10), // 정답
+    INCORRECT(5), // 오답
+    SKIPPED(0), // 포기
+
+    ALL(0); // 전체
+
+    private final int experiencePoints;
 }

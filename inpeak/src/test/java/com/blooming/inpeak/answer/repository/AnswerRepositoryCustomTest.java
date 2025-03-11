@@ -209,6 +209,55 @@ class AnswerRepositoryCustomTest {
     }
 
     @Test
+    @DisplayName("findRecentAnswers()는 필터 조건이 ALL일 때 모든 조건의 답변을 반환해야 한다.")
+    void findRecentAnswers_ShouldReturnAllAnswers_WhenStatusIsALL() {
+        // when
+        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.ALL);
+
+        // then
+        assertThat(results).isNotNull();
+        assertThat(results).extracting(Answer::getStatus)
+            .containsAnyOf(AnswerStatus.CORRECT, AnswerStatus.INCORRECT, AnswerStatus.SKIPPED);
+
+    }
+
+    @Test
+    @DisplayName("findRecentAnswers()는 필터 조건이 CORRECT일 때 정답 상태의 답변만 반환해야 한다.")
+    void findRecentAnswers_ShouldReturnCorrectAnswers_WhenStatusIsCORRECT() {
+        // when
+        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.CORRECT);
+
+        // then
+        assertThat(results).isNotNull();
+        assertThat(results).extracting(Answer::getStatus)
+            .containsOnly(AnswerStatus.CORRECT);
+    }
+
+    @Test
+    @DisplayName("findRecentAnswers()는 필터 조건이 INCORRECT일 때 오답 상태의 답변만 반환해야 한다.")
+    void findRecentAnswers_ShouldReturnIncorrectAnswers_WhenStatusIsINCORRECT() {
+        // when
+        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.INCORRECT);
+
+        // then
+        assertThat(results).isNotNull();
+        assertThat(results).extracting(Answer::getStatus)
+            .containsOnly(AnswerStatus.INCORRECT);
+    }
+
+    @Test
+    @DisplayName("findRecentAnswers()는 필터 조건이 SKIPPED일 때 스킵 상태의 답변만 반환해야 한다.")
+    void findRecentAnswers_ShouldReturnSkippedAnswers_WhenStatusIsSKIPPED() {
+        // when
+        List<Answer> results = answerRepositoryCustom.findRecentAnswers(testMember.getId(), AnswerStatus.SKIPPED);
+
+        // then
+        assertThat(results).isNotNull();
+        assertThat(results).extracting(Answer::getStatus)
+            .containsOnly(AnswerStatus.SKIPPED);
+    }
+
+    @Test
     @DisplayName("findRecentAnswers()는 최신순으로 정렬된 답변을 반환해야 한다.")
     void findRecentAnswers_ShouldReturnAnswersInDescendingOrder() {
         // when
