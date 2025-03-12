@@ -18,22 +18,6 @@ class InterviewRepositoryTest extends IntegrationTestSupport {
 
     @Test
     @Transactional
-    @DisplayName("회원의 인터뷰 개수를 조회하면 정확한 개수를 반환해야 한다.")
-    void countByMemberId_ShouldReturnCorrectCount() {
-        // given
-        Long memberId = 1L;
-        interviewRepository.save(Interview.of(memberId, LocalDate.now()));
-        interviewRepository.save(Interview.of(memberId, LocalDate.now().minusDays(1)));
-
-        // when
-        long count = interviewRepository.countByMemberId(memberId);
-
-        // then
-        assertThat(count).isEqualTo(2);
-    }
-
-    @Test
-    @Transactional
     @DisplayName("회원이 특정 날짜에 인터뷰를 진행한 경우 true, 진행하지 않은 경우 false를 반환해야 한다.")
     void existsByMemberIdAndStartDate_ShouldReturnTrueIfExists() {
         // given

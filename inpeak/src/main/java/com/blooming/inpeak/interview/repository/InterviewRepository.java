@@ -9,9 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface InterviewRepository extends JpaRepository<Interview, Long> {
 
-    // 특정 회원 ID에 해당하는 인터뷰 횟수 조회
-    long countByMemberId(Long memberId);
-
     // 특정 회원 ID와 특정 날짜에 해당하는 인터뷰가 존재하는지 확인
     boolean existsByMemberIdAndStartDate(Long memberId, LocalDate startDate);
 

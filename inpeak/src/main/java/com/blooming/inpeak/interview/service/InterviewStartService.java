@@ -22,7 +22,7 @@ public class InterviewStartService {
     public InterviewStartResponse startInterview(Long memberId, LocalDate startDate) {
 
         // 남은 모의면접 횟수 확인
-        int interviewCount = interviewService.getRemainingInterviews(memberId, startDate).remainingInterviews();
+        int interviewCount = interviewService.getRemainingInterviews(memberId, startDate).count();
         if (interviewCount == 0) {
             throw new RuntimeException("남은 모의면접 횟수가 없습니다.");
         }

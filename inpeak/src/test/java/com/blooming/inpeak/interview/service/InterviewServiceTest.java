@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.interview.dto.response.CalendarResponse;
 import com.blooming.inpeak.interview.dto.response.RemainingInterviewsResponse;
-import com.blooming.inpeak.interview.dto.response.TotalInterviewsResponse;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
 import com.blooming.inpeak.support.IntegrationTestSupport;
 import java.time.LocalDate;
@@ -28,21 +27,6 @@ class InterviewServiceTest extends IntegrationTestSupport {
 
     @Test
     @Transactional
-    @DisplayName("회원의 총 인터뷰 횟수를 조회하면 정확한 개수를 반환해야 한다.")
-    void getTotalInterviews_ShouldReturnCorrectCount() {
-        // given
-        interviewRepository.save(Interview.of(MEMBER_ID, LocalDate.now().minusDays(1)));
-        interviewRepository.save(Interview.of(MEMBER_ID, LocalDate.now().minusDays(2)));
-
-        // when
-        TotalInterviewsResponse response = interviewService.getTotalInterviews(MEMBER_ID);
-
-        // then
-        assertThat(response.totalCount()).isEqualTo(2);
-    }
-
-    @Test
-    @Transactional
     @DisplayName("회원이 오늘 인터뷰를 진행하지 않았다면 남은 인터뷰 횟수는 1이어야 한다.")
     void getRemainingInterviews_ShouldReturnOneIfNoInterviewToday() {
         // given
@@ -52,7 +36,7 @@ class InterviewServiceTest extends IntegrationTestSupport {
         RemainingInterviewsResponse response = interviewService.getRemainingInterviews(MEMBER_ID, today);
 
         // then
-        assertThat(response.remainingInterviews()).isEqualTo(1);
+        assertThat(response.count()).isEqualTo(1);
     }
 
     @Test
@@ -67,7 +51,7 @@ class InterviewServiceTest extends IntegrationTestSupport {
         RemainingInterviewsResponse response = interviewService.getRemainingInterviews(MEMBER_ID, today);
 
         // then
-        assertThat(response.remainingInterviews()).isEqualTo(0);
+        assertThat(response.count()).isEqualTo(0);
     }
 
     @Test
