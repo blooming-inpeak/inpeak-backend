@@ -13,5 +13,5 @@ public enum AnswerStatus {
 
     ALL(0); // 전체
 
-    private final int experiencePoints;
+    private final int expPoints;
 }

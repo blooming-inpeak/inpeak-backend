@@ -14,8 +14,8 @@ import com.blooming.inpeak.answer.dto.response.RecentAnswerResponse;
 import com.blooming.inpeak.answer.dto.response.UserStatsResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
-import com.blooming.inpeak.answer.repository.UserAnswerStatsRepository;
 import com.blooming.inpeak.interview.domain.Interview;
+import com.blooming.inpeak.answer.dto.response.MemberLevelResponse;
 import com.blooming.inpeak.question.domain.Question;
 import com.blooming.inpeak.question.repository.QuestionRepository;
 import java.time.LocalDate;
@@ -36,6 +36,9 @@ public class AnswerService {
     private final AnswerRepositoryCustom answerRepositoryCustom;
     private final GPTService gptService;
     private final QuestionRepository questionRepository;
+
+    private static final int[] LEVEL_EXP_TABLE = {0, 30, 90, 180, 300, 450, 630, 840, 1080, 1350};
+    private static final int MAX_LEVEL = LEVEL_EXP_TABLE.length;
 
     /**
      * 답변을 스킵하는 메서드
@@ -180,5 +183,41 @@ public class AnswerService {
             .orElseThrow(() -> new IllegalArgumentException("해당 답변이 존재하지 않습니다."));
 
         return AnswerDetailResponse.from(answer);
+    }
+
+    /**
+     * 회원의 레벨 정보를 가져오는 메서드
+     *
+     * @param memberId 사용자 ID
+     * @return 회원의 레벨 정보
+     */
+    public MemberLevelResponse getMemberLevel(Long memberId) {
+        UserStatsResponse stats = answerRepository.getUserStats(memberId);
+
+        int exp = calculateExp(stats.correctAnswerCount().intValue(),
+            stats.incorrectAnswerCount().intValue());
+        int level = calculateLevel(exp);
+
+        boolean isMaxLevel = (level == MAX_LEVEL);
+        int baseIndex = isMaxLevel ? (level - 2) : (level - 1);
+        int topIndex = isMaxLevel ? (level - 1) : level;
+
+        int currentExp = exp - LEVEL_EXP_TABLE[baseIndex];
+        int nextExp = LEVEL_EXP_TABLE[topIndex] - LEVEL_EXP_TABLE[baseIndex];
+
+        return MemberLevelResponse.of(level, currentExp, nextExp);
+    }
+
+    private int calculateExp(int correct, int incorrect) {
+        return
+            correct * AnswerStatus.CORRECT.getExpPoints()
+                + incorrect * AnswerStatus.INCORRECT.getExpPoints();
+    }
+
+    private int calculateLevel(int exp) {
+        double val = (1 + Math.sqrt(1 + (4.0 * exp / 15.0))) / 2.0;
+        int level = (int) Math.floor(val);
+
+        return Math.min(level, MAX_LEVEL);
     }
 }

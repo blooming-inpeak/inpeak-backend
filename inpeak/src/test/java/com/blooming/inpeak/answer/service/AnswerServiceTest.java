@@ -8,6 +8,7 @@ import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
 import com.blooming.inpeak.answer.dto.response.AnswerDetailResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
+import com.blooming.inpeak.answer.dto.response.MemberLevelResponse;
 import com.blooming.inpeak.answer.dto.response.RecentAnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.RecentAnswerResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
@@ -20,8 +21,8 @@ import com.blooming.inpeak.question.repository.QuestionRepository;
 import com.blooming.inpeak.support.IntegrationTestSupport;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.ArrayList;
 import java.util.Comparator;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +68,18 @@ class AnswerServiceTest extends IntegrationTestSupport {
             .isUnderstood(isUnderstood)
             .status(status)
             .build());
+    }
+
+    private Answer createAnswerEntity(Long memberId, Long questionId, Long interviewId, AnswerStatus status) {
+        return Answer.builder()
+            .questionId(questionId)
+            .memberId(memberId)
+            .interviewId(interviewId)
+            .userAnswer("스프링 답변1")
+            .runningTime(120L)
+            .isUnderstood(false)
+            .status(status)
+            .build();
     }
 
     @DisplayName("저장된 데이터를 기반으로 올바른 응답을 반환해야 한다")
@@ -338,4 +351,78 @@ class AnswerServiceTest extends IntegrationTestSupport {
             .hasMessage("해당 답변이 존재하지 않습니다.");
     }
 
+    @DisplayName("getMemberLevel()은 경험치가 0일 때 올바른 레벨 정보를 반환해야 한다.")
+    @Transactional
+    @Test
+    void getMemberLevel_ShouldReturnLevelInformation_WhenExpIsZero() {
+        // when
+        MemberLevelResponse response = answerService.getMemberLevel(memberId);
+
+        // then
+        assertThat(response.level()).isEqualTo(1);
+        assertThat(response.currentExp()).isEqualTo(0);
+        assertThat(response.nextExp()).isEqualTo(30);
+    }
+
+    @DisplayName("getMemberLevel()은 경험치 40일 때 올바른 레벨 정보를 반환해야 한다.")
+    @Transactional
+    @Test
+    void getMemberLevel_ShouldReturnCorrectLevelInformation_WhenExpIs40() {
+        // given
+        Interview interview = interviewRepository.save(Interview.of(memberId, LocalDate.now()));
+
+        Question question1 = questionRepository.save(
+            Question.of("스프링 질문1", QuestionType.SPRING, "모법 답변"));
+        Question question2 = questionRepository.save(
+            Question.of("스프링 질문2", QuestionType.SPRING, "모법 답변"));
+
+        createAnswer(memberId, question1.getId(), interview.getId(), "스프링 답변1", 120L,
+            AnswerStatus.CORRECT, false);
+        createAnswer(memberId, question2.getId(), interview.getId(), "스프링 답변2", 130L,
+            AnswerStatus.CORRECT, false);
+        createAnswer(memberId, question1.getId(), interview.getId(), "스프링 답변3", 130L,
+            AnswerStatus.CORRECT, true);
+        createAnswer(memberId, question2.getId(), interview.getId(), "스프링 답변4", 130L,
+            AnswerStatus.CORRECT, true);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // when
+        MemberLevelResponse response = answerService.getMemberLevel(memberId);
+
+        // then
+        assertThat(response.level()).isEqualTo(2);
+        assertThat(response.currentExp()).isEqualTo(10);
+        assertThat(response.nextExp()).isEqualTo(60);
+    }
+
+    @DisplayName("getMemberLevel()은 경험치가 1350을 초과하면 최대 레벨과 올바른 경험치 정보를 반환해야 한다.")
+    @Transactional
+    @Test
+    void getMemberLevel_ShouldReturnMaxLevel_WhenExpExceeds1350() {
+        // given
+        Interview interview = interviewRepository.save(Interview.of(memberId, LocalDate.now()));
+
+        Question question1 = questionRepository.save(
+            Question.of("스프링 질문1", QuestionType.SPRING, "모법 답변"));
+
+        List<Answer> answers = new ArrayList<>();
+        for (int i = 0; i < 135; i++) {
+            answers.add(createAnswerEntity(memberId, question1.getId(), interview.getId(), AnswerStatus.CORRECT));
+        }
+        answers.add(createAnswerEntity(memberId, question1.getId(), interview.getId(), AnswerStatus.INCORRECT));
+        answerRepository.saveAll(answers);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // when
+        MemberLevelResponse response = answerService.getMemberLevel(memberId);
+
+        // then
+        assertThat(response.level()).isEqualTo(10);
+        assertThat(response.currentExp()).isEqualTo(275);
+        assertThat(response.nextExp()).isEqualTo(270);
+    }
 }

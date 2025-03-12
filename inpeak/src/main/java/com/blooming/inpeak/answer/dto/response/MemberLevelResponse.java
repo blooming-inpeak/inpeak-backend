@@ -1,4 +1,4 @@
-package com.blooming.inpeak.member.dto.response;
+package com.blooming.inpeak.answer.dto.response;
 
 import lombok.Builder;
 
