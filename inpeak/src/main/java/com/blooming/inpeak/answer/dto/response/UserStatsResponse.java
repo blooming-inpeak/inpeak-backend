@@ -23,9 +23,9 @@ public record UserStatsResponse(
     ) {
         this(
             totalAnswerCount,
-            correctAnswerCount,
-            incorrectAnswerCount,
-            skippedAnswerCount,
+            correctAnswerCount == null ? 0 : correctAnswerCount,
+            incorrectAnswerCount == null ? 0 : incorrectAnswerCount,
+            skippedAnswerCount == null ? 0 : skippedAnswerCount,
             totalInterviewCount,
             convertToLong(totalRunningTime) // ✅ 변환 로직을 주 생성자로 넘김
         );
