@@ -9,34 +9,26 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.util.Collection;
-import java.util.Collections;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Getter
 @Table(name = "members")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member extends BaseEntity implements UserDetails {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String email;
+    @Column
+    private Long kakaoId;
 
     @Column(nullable = false, unique = true)
     private String nickname;
-
-    @Column(nullable = false, unique = true)
-    private String accessToken;
 
     @Column
     private Long totalQuestionCount;
@@ -54,13 +46,14 @@ public class Member extends BaseEntity implements UserDetails {
 
     @Builder
     private Member(
-        String email, String nickname, String accessToken,
-        Long totalQuestionCount, Long correctAnswerCount, OAuth2Provider provider,
+        Long id,
+        Long kakaoId, String nickname, Long totalQuestionCount,
+        Long correctAnswerCount, OAuth2Provider provider,
         RegistrationStatus registrationStatus
     ) {
-        this.email = email;
+        this.id = id;
+        this.kakaoId = kakaoId;
         this.nickname = nickname;
-        this.accessToken = accessToken;
         this.totalQuestionCount = totalQuestionCount;
         this.correctAnswerCount = correctAnswerCount;
         this.provider = provider;
@@ -71,45 +64,28 @@ public class Member extends BaseEntity implements UserDetails {
     // 테스트 파일에서 사용할 생성자
     @Builder(access = AccessLevel.PRIVATE)
     public Member(
-        Long id, String email, String nickname, String accessToken,
+        Long id, Long kakaoId, String nickname,
         OAuth2Provider provider, RegistrationStatus registrationStatus
     ) {
         this.id = id;
-        this.email = email;
+        this.kakaoId= kakaoId;
         this.nickname = nickname;
-        this.accessToken = accessToken;
         this.provider = provider;
         this.registrationStatus =
             registrationStatus != null ? registrationStatus : RegistrationStatus.INITIATED;
     }
 
     public static Member of(
-        String email, String nickname, String accessToken,
+        Long kakaoId, String nickname,
         OAuth2Provider provider, RegistrationStatus registrationStatus
     ) {
         return Member.builder()
-            .email(email)
+            .kakaoId(kakaoId)
             .nickname(nickname)
-            .accessToken(accessToken)
             .provider(provider)
             .registrationStatus(
                 registrationStatus != null ? registrationStatus : RegistrationStatus.INITIATED)
             .build();
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
-    }
-
-    @Override
-    public String getPassword() {
-        return "";
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
     }
 
     public boolean registrationCompleted() {

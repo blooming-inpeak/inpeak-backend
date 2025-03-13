@@ -36,8 +36,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     ) throws IOException {
 
         MemberPrincipal oAuth2User = (MemberPrincipal) authentication.getPrincipal();
-        String email = oAuth2User.getName();
-        Member member = memberRepository.findByEmail(email)
+        Member member = memberRepository.findByKakaoId(oAuth2User.kakaoId())
             .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         String accessToken = jwtTokenProvider.makeToken(member, ACCESS_TOKEN_DURATION);

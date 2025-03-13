@@ -63,11 +63,10 @@ class CustomOAuth2UserServiceTest {
     @DisplayName("기존 회원 로드 성공")
     void loadExistingUser() {
         // given
-        String email = "existing@kakao.com";
+        Long kakaoId = 12345678L;
         Member existingMember = Member.builder()
-            .email(email)
+            .kakaoId(kakaoId)
             .nickname("기존회원")
-            .accessToken("existing-token")
             .provider(OAuth2Provider.KAKAO)
             .totalQuestionCount(0L)
             .correctAnswerCount(0L)
@@ -75,10 +74,9 @@ class CustomOAuth2UserServiceTest {
 
         // 테스트 데이터 설정
         Map<String, Object> kakaoAccount = new HashMap<>();
-        kakaoAccount.put("email", email);
 
         Map<String, Object> attributes = new HashMap<>();
-        attributes.put("id", 12345678L);
+        attributes.put("id", kakaoId);
         attributes.put("kakao_account", kakaoAccount);
 
         OAuth2User oAuth2User = new DefaultOAuth2User(
@@ -117,7 +115,7 @@ class CustomOAuth2UserServiceTest {
         when(defaultOAuth2UserService.loadUser(any(OAuth2UserRequest.class))).thenReturn(oAuth2User);
 
         // Mocking - 기존 회원이 존재하는 경우
-        when(memberRepository.findByEmail(email)).thenReturn(Optional.of(existingMember));
+        when(memberRepository.findByKakaoId(kakaoId)).thenReturn(Optional.of(existingMember));
 
         // when
         OAuth2User result = customOAuth2UserService.loadUser(userRequest);
@@ -130,14 +128,13 @@ class CustomOAuth2UserServiceTest {
     @DisplayName("신규 회원 등록 성공")
     void registerNewUser() {
         // given
-        String email = "new@kakao.com";
+        Long kakaoId = 12345678L;
         String generatedNickname = "신규닉네임123";
         String tokenValue = "new-token-value";
 
         Member newMember = Member.builder()
-            .email(email)
+            .kakaoId(kakaoId)
             .nickname(generatedNickname)
-            .accessToken(tokenValue)
             .provider(OAuth2Provider.KAKAO)
             .totalQuestionCount(0L)
             .correctAnswerCount(0L)
@@ -145,10 +142,9 @@ class CustomOAuth2UserServiceTest {
 
         // 테스트 데이터 설정
         Map<String, Object> kakaoAccount = new HashMap<>();
-        kakaoAccount.put("email", email);
 
         Map<String, Object> attributes = new HashMap<>();
-        attributes.put("id", 87654321L);
+        attributes.put("id", kakaoId);
         attributes.put("kakao_account", kakaoAccount);
 
         OAuth2User oAuth2User = new DefaultOAuth2User(
@@ -185,7 +181,7 @@ class CustomOAuth2UserServiceTest {
 
         // Mocking
         when(defaultOAuth2UserService.loadUser(any(OAuth2UserRequest.class))).thenReturn(oAuth2User);
-        when(memberRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(memberRepository.findByKakaoId(kakaoId)).thenReturn(Optional.empty());
         when(nicknameGenerator.generateUniqueNickname()).thenReturn(generatedNickname);
         when(memberRepository.save(any(Member.class))).thenReturn(newMember);
 
@@ -195,6 +191,6 @@ class CustomOAuth2UserServiceTest {
         // then
         assertThat(result).isInstanceOf(MemberPrincipal.class);
         MemberPrincipal principal = (MemberPrincipal) result;
-        assertThat(principal.email()).isEqualTo(email);
+        assertThat(principal.kakaoId()).isEqualTo(kakaoId);
     }
 }

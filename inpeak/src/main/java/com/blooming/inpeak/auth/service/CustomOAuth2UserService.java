@@ -5,7 +5,6 @@ import com.blooming.inpeak.member.domain.Member;
 import com.blooming.inpeak.member.domain.OAuth2Provider;
 import com.blooming.inpeak.member.domain.RegistrationStatus;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
-import com.blooming.inpeak.member.dto.OAuth2Command;
 import com.blooming.inpeak.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -39,32 +38,22 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     private OAuth2User processOAuth2User(OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
-        String provider = userRequest.getClientRegistration().getRegistrationId();
-        String userNameAttributeName = userRequest.getClientRegistration()
-            .getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
-
-        OAuth2Command oAuth2Command = OAuth2Command.of(
-            provider, userNameAttributeName, oAuth2User.getAttributes()
-        );
-
-        String email = oAuth2Command.getEmail();
-        String accessToken = userRequest.getAccessToken().getTokenValue();
+        Long kakaoId = (Long) oAuth2User.getAttributes().get("id");
 
         // 기존 회원 조회
-        Member member = memberRepository.findByEmail(email)
-            .orElseGet(() -> registerNewMember(email, accessToken, oAuth2Command.getProvider()));
+        Member member = memberRepository.findByKakaoId(kakaoId)
+            .orElseGet(() -> registerNewMember(kakaoId));
 
         return MemberPrincipal.create(member, oAuth2User.getAttributes());
     }
 
-    private Member registerNewMember(String email, String accessToken, OAuth2Provider provider) {
+    private Member registerNewMember(Long kakaoId) {
         String uniqueNickname = nicknameGenerator.generateUniqueNickname();
 
         Member member = Member.builder()
-            .email(email)
+            .kakaoId(kakaoId)
             .nickname(uniqueNickname)
-            .accessToken(accessToken)
-            .provider(provider)
+            .provider(OAuth2Provider.KAKAO)
             .totalQuestionCount(0L)
             .correctAnswerCount(0L)
             .registrationStatus(RegistrationStatus.INITIATED)

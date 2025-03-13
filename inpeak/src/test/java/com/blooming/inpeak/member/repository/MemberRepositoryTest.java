@@ -29,11 +29,10 @@ class MemberRepositoryTest extends IntegrationTestSupport {
     @Transactional
     void findByEmail() {
         // given
-        String email = "test@example.com";
+        Long kakaoId = 1234567890L;
         Member member = Member.builder()
-            .email(email)
+            .kakaoId(kakaoId)
             .nickname("테스트유저")
-            .accessToken("access-token")
             .provider(OAuth2Provider.KAKAO)
             .totalQuestionCount(0L)
             .correctAnswerCount(0L)
@@ -41,11 +40,11 @@ class MemberRepositoryTest extends IntegrationTestSupport {
         memberRepository.save(member);
 
         // when
-        Member found = memberRepository.findByEmail(email)
+        Member found = memberRepository.findByKakaoId(kakaoId)
             .orElseThrow(() -> new IllegalStateException("해당 이메일의 회원이 존재하지 않습니다."));
 
         // then
-        assertThat(found.getEmail()).isEqualTo("test@example.com");
+        assertThat(found.getKakaoId()).isEqualTo(kakaoId);
     }
 
     @DisplayName("닉네임으로 회원 조회")
@@ -53,11 +52,11 @@ class MemberRepositoryTest extends IntegrationTestSupport {
     @Transactional
     void existsByNickname() {
         //given
+        Long kakaoId = 1234567890L;
         String nickname = "유니크 닉네임";
         Member member = Member.builder()
-            .email("test@example.com")
+            .kakaoId(kakaoId)
             .nickname(nickname)
-            .accessToken("access-token")
             .provider(OAuth2Provider.KAKAO)
             .totalQuestionCount(0L)
             .correctAnswerCount(0L)

@@ -21,7 +21,7 @@ public class AuthController {
 
     @GetMapping("/test")
     public String test(@AuthenticationPrincipal MemberPrincipal memberPrincipal) {
-        System.out.println("member = " + memberPrincipal.email());
+        System.out.println("member = " + memberPrincipal.kakaoId());
         return memberPrincipal.toString();
     }
 

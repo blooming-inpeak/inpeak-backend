@@ -13,7 +13,7 @@ import java.util.Map;
 
 public record MemberPrincipal(
     Long id,
-    String email,
+    Long kakaoId,
     String nickname,
     OAuth2Provider provider,
     Long totalQuestionCount,
@@ -29,7 +29,7 @@ public record MemberPrincipal(
     public static MemberPrincipal create(Member member, Map<String, Object> attributes) {
         return MemberPrincipal.builder()
             .id(member.getId())
-            .email(member.getEmail())
+            .kakaoId(member.getKakaoId())
             .nickname(member.getNickname())
             .provider(member.getProvider())
             .totalQuestionCount(member.getTotalQuestionCount())
@@ -51,14 +51,6 @@ public record MemberPrincipal(
 
     @Override
     public String getName() {
-        return email;
-    }
-
-    /**
-     * 특정 속성에 접근하기 위한 편의 메서드
-     */
-    @SuppressWarnings("unchecked")
-    public <T> T getAttribute(String name) {
-        return (T) attributes.get(name);
+        return String.valueOf(id);
     }
 }

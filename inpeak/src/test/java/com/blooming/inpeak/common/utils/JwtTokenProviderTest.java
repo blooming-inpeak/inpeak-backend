@@ -135,8 +135,12 @@ class JwtTokenProviderTest extends IntegrationTestSupport {
      * 테스트용 Member 객체 생성 헬퍼 메서드
      */
     private Member createTestMember(Long id) {
-        return new Member(
-            id, "test@example.com", "테스트유저", "kakao-token",
-            OAuth2Provider.KAKAO, RegistrationStatus.COMPLETED);
+        return Member.builder()
+            .id(id)
+            .kakaoId(1234567890L)
+            .nickname("테스트유저")
+            .provider(OAuth2Provider.KAKAO)
+            .registrationStatus(RegistrationStatus.COMPLETED)
+            .build();
     }
 }

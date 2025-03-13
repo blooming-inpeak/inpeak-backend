@@ -50,9 +50,8 @@ class AnswerRepositoryCustomTest {
 
         testMember = entityManager.persist(
             Member.of(
-                "test@test.com",
-                "test",
-                "test",
+                1234567890L,
+                "테스트 닉네임",
                 OAuth2Provider.KAKAO,
                 RegistrationStatus.COMPLETED
             )
