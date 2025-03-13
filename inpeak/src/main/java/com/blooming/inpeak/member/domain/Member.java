@@ -95,4 +95,8 @@ public class Member extends BaseEntity {
     public void completeRegistration() {
         this.registrationStatus = RegistrationStatus.COMPLETED;
     }
+
+    public void updateNickname(String nickName) {
+        this.nickname = nickName;
+    }
 }
