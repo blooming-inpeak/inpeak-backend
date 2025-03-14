@@ -15,8 +15,12 @@ spring:
 
 jwt:
   secret: ${SECRET_KEY:your-secret-key-should-be-at-least-32-characters-long}
-  expiration: ${EXPIRATION_TIME:86400000}
+  accessToken:
+    expiration: ${EXPIRATION_TIME:86400000}
+  refreshToken:
+    expiration: ${REFRESH_EXPIRATION_TIME:1209600000}
   issuer: ${ISSUER:inpeak}
+  redirectUri: ${REDIRECT_URL:"http://localhost:5173/interview/"}
 
 server:
   tomcat:
