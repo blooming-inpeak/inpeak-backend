@@ -79,4 +79,6 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
     FROM Answer a
     """)
     int getAverageSuccessRate();
+
+    void deleteByMemberId(Long id);
 }

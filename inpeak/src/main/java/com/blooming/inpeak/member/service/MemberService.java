@@ -1,7 +1,10 @@
 package com.blooming.inpeak.member.service;
 
+import com.blooming.inpeak.answer.repository.AnswerRepository;
+import com.blooming.inpeak.auth.repository.RefreshTokenRepository;
+import com.blooming.inpeak.interview.repository.InterviewRepository;
 import com.blooming.inpeak.member.domain.Member;
-import com.blooming.inpeak.member.dto.request.NincknameUpdateRequest;
+import com.blooming.inpeak.member.repository.MemberInterestRepository;
 import com.blooming.inpeak.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final AnswerRepository answerRepository;
+    private final InterviewRepository interviewRepository;
+    private final MemberInterestRepository memberInterestRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
     public String updateNickName(Long memberId, String nickName) {
@@ -25,5 +32,17 @@ public class MemberService {
         member.updateNickname(nickName);
 
         return nickName;
+    }
+
+    @Transactional
+    public void withdrawMember(Long id) {
+        Member member = memberRepository.findById(id).orElseThrow(
+            () -> new IllegalArgumentException("존재하지 않는 회원입니다: " + id));
+
+        answerRepository.deleteByMemberId(id);
+        interviewRepository.deleteByMemberId(id);
+        memberInterestRepository.deleteByMemberId(id);
+        refreshTokenRepository.deleteByMemberId(id);
+        memberRepository.delete(member);
     }
 }

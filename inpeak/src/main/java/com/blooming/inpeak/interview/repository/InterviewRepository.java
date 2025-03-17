@@ -14,4 +14,6 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
 
     // 특정 멤버 ID와 특정 월에 해당하는 인터뷰 조회
     List<Interview> findByMemberIdAndStartDateBetween(Long memberId, LocalDate start, LocalDate end);
+
+    void deleteByMemberId(Long id);
 }
