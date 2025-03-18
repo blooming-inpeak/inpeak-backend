@@ -59,7 +59,7 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
      */
     @Query("""
     SELECT COALESCE(
-        CAST(SUM(CASE WHEN a.status = 'CORRECT' THEN 1 ELSE 0 END) * 100 AS INTEGER) / 
+        CAST(SUM(CASE WHEN a.status = 'CORRECT' THEN 1 ELSE 0 END) * 100 AS INTEGER) /
         NULLIF(CAST(SUM(CASE WHEN a.status IN ('CORRECT', 'INCORRECT') THEN 1 ELSE 0 END) AS INTEGER), 0),
         0)
     FROM Answer a

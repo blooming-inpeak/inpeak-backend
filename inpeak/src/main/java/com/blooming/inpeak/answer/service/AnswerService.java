@@ -122,6 +122,7 @@ public class AnswerService {
      *
      * @param command 답변 생성 명령
      */
+    @Transactional
     public AnswerIDResponse createAnswer(AnswerCreateCommand command) {
         Question question = questionRepository.findById(command.questionId())
             .orElseThrow(() -> new IllegalArgumentException("해당 질문이 존재하지 않습니다."));
@@ -140,6 +141,7 @@ public class AnswerService {
      * @param answerId     답변 ID
      * @param isUnderstood 사용자가 이해했는지 여부
      */
+    @Transactional
     public void updateUnderstood(Long answerId, boolean isUnderstood) {
         Answer answer = answerRepository.findById(answerId)
             .orElseThrow(() -> new IllegalArgumentException("해당 답변이 존재하지 않습니다."));
@@ -154,6 +156,7 @@ public class AnswerService {
      * @param answerId 답변 ID
      * @param comment  코멘트
      */
+    @Transactional
     public void updateComment(Long answerId, String comment) {
         Answer answer = answerRepository.findById(answerId)
             .orElseThrow(() -> new IllegalArgumentException("해당 답변이 존재하지 않습니다."));
