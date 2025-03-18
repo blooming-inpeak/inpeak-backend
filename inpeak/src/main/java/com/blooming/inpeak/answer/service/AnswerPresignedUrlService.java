@@ -74,7 +74,7 @@ public class AnswerPresignedUrlService {
      * @param memberId  사용자 ID
      * @param startDate 인터뷰 시작 날짜
      * @param extension 확장자 (예: "mp4")
-     * @return "videos/123/20250228/uuid.extension" 형태의 파일명
+     * @return "videos/123/250228/uuid.extension" 형태의 파일명
      */
     private String generateObjectKey(Long memberId, LocalDate startDate, String extension) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd");

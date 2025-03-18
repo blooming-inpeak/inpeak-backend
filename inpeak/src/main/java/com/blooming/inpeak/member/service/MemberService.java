@@ -1,6 +1,7 @@
 package com.blooming.inpeak.member.service;
 
 import com.blooming.inpeak.answer.repository.AnswerRepository;
+import com.blooming.inpeak.answer.service.AnswerVideoCleanupService;
 import com.blooming.inpeak.auth.repository.RefreshTokenRepository;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
 import com.blooming.inpeak.member.domain.Member;
@@ -19,6 +20,7 @@ public class MemberService {
     private final InterviewRepository interviewRepository;
     private final MemberInterestRepository memberInterestRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final AnswerVideoCleanupService answerVideoCleanupService;
 
     @Transactional
     public String updateNickName(Long memberId, String nickName) {
@@ -44,5 +46,6 @@ public class MemberService {
         memberInterestRepository.deleteByMemberId(id);
         refreshTokenRepository.deleteByMemberId(id);
         memberRepository.delete(member);
+        answerVideoCleanupService.deleteAllS3Objects(id);
     }
 }

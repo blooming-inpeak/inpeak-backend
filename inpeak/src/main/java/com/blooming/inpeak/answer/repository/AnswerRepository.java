@@ -81,4 +81,10 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
     int getAverageSuccessRate();
 
     void deleteByMemberId(Long id);
+
+    /**
+     * 특정 멤버의 모든 비디오 URL 조회
+     */
+    @Query(value = "SELECT video_url FROM answer WHERE member_id = :memberId", nativeQuery = true)
+    List<String> findAllVideoUrlsByMemberId(@Param("memberId") Long memberId);
 }

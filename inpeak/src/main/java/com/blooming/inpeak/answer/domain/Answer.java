@@ -53,6 +53,7 @@ public class Answer extends BaseEntity {
 
     private String userAnswer;
 
+    @Column(name = "video_url")
     private String videoURL;
 
     private Long runningTime;
