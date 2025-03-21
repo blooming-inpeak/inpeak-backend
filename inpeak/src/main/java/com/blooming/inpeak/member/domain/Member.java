@@ -44,12 +44,15 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private RegistrationStatus registrationStatus;
 
+    @Column(nullable = false)
+    private String kakaoEmail;
+
     @Builder
     private Member(
         Long id,
         Long kakaoId, String nickname, Long totalQuestionCount,
         Long correctAnswerCount, OAuth2Provider provider,
-        RegistrationStatus registrationStatus
+        RegistrationStatus registrationStatus, String kakaoEmail
     ) {
         this.id = id;
         this.kakaoId = kakaoId;
@@ -59,13 +62,15 @@ public class Member extends BaseEntity {
         this.provider = provider;
         this.registrationStatus =
             registrationStatus != null ? registrationStatus : RegistrationStatus.INITIATED;
+        this.kakaoEmail = kakaoEmail;
     }
 
     // 테스트 파일에서 사용할 생성자
     @Builder(access = AccessLevel.PRIVATE)
     public Member(
         Long id, Long kakaoId, String nickname,
-        OAuth2Provider provider, RegistrationStatus registrationStatus
+        OAuth2Provider provider, RegistrationStatus registrationStatus,
+        String kakaoEmail
     ) {
         this.id = id;
         this.kakaoId= kakaoId;
@@ -73,10 +78,11 @@ public class Member extends BaseEntity {
         this.provider = provider;
         this.registrationStatus =
             registrationStatus != null ? registrationStatus : RegistrationStatus.INITIATED;
+        this.kakaoEmail = kakaoEmail;
     }
 
     public static Member of(
-        Long kakaoId, String nickname,
+        Long kakaoId, String nickname, String kakaoEmail,
         OAuth2Provider provider, RegistrationStatus registrationStatus
     ) {
         return Member.builder()
@@ -85,6 +91,7 @@ public class Member extends BaseEntity {
             .provider(provider)
             .registrationStatus(
                 registrationStatus != null ? registrationStatus : RegistrationStatus.INITIATED)
+            .kakaoEmail(kakaoEmail)
             .build();
     }
 

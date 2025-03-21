@@ -6,6 +6,7 @@ import com.blooming.inpeak.member.domain.OAuth2Provider;
 import com.blooming.inpeak.member.domain.RegistrationStatus;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
 import com.blooming.inpeak.member.repository.MemberRepository;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -40,14 +41,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private OAuth2User processOAuth2User(OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
         Long kakaoId = (Long) oAuth2User.getAttributes().get("id");
 
-        // 기존 회원 조회
+        @SuppressWarnings("unchecked")
+        var kakaoAccount = (Map<String, Object>) oAuth2User.getAttributes().get("kakao_account");
+        String kakaoEmail = kakaoAccount.get("email").toString();
+
         Member member = memberRepository.findByKakaoId(kakaoId)
-            .orElseGet(() -> registerNewMember(kakaoId));
+            .orElseGet(() -> registerNewMember(kakaoId, kakaoEmail));
 
         return MemberPrincipal.create(member, oAuth2User.getAttributes());
     }
 
-    private Member registerNewMember(Long kakaoId) {
+    private Member registerNewMember(Long kakaoId, String kakaoEmail) {
         String uniqueNickname = nicknameGenerator.generateUniqueNickname();
 
         Member member = Member.builder()
@@ -57,6 +61,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             .totalQuestionCount(0L)
             .correctAnswerCount(0L)
             .registrationStatus(RegistrationStatus.INITIATED)
+            .kakaoEmail(kakaoEmail)
             .build();
 
         return memberRepository.save(member);

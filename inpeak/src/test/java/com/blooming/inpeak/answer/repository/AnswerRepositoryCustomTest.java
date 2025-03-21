@@ -52,6 +52,7 @@ class AnswerRepositoryCustomTest {
             Member.of(
                 1234567890L,
                 "테스트 닉네임",
+                "test@test.com",
                 OAuth2Provider.KAKAO,
                 RegistrationStatus.COMPLETED
             )

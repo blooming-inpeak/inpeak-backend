@@ -63,8 +63,10 @@ class CustomOAuth2UserServiceTest {
     @DisplayName("기존 회원 로드 성공")
     void loadExistingUser() {
         // given
+        String testEmail = "test@test.com";
         Long kakaoId = 12345678L;
         Member existingMember = Member.builder()
+            .kakaoEmail(testEmail)
             .kakaoId(kakaoId)
             .nickname("기존회원")
             .provider(OAuth2Provider.KAKAO)
@@ -74,6 +76,7 @@ class CustomOAuth2UserServiceTest {
 
         // 테스트 데이터 설정
         Map<String, Object> kakaoAccount = new HashMap<>();
+        kakaoAccount.put("email", testEmail);
 
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("id", kakaoId);
@@ -131,6 +134,7 @@ class CustomOAuth2UserServiceTest {
         Long kakaoId = 12345678L;
         String generatedNickname = "신규닉네임123";
         String tokenValue = "new-token-value";
+        String testEmail = "test@test.com";
 
         Member newMember = Member.builder()
             .kakaoId(kakaoId)
@@ -138,10 +142,12 @@ class CustomOAuth2UserServiceTest {
             .provider(OAuth2Provider.KAKAO)
             .totalQuestionCount(0L)
             .correctAnswerCount(0L)
+            .kakaoEmail(testEmail)
             .build();
 
         // 테스트 데이터 설정
         Map<String, Object> kakaoAccount = new HashMap<>();
+        kakaoAccount.put("email", testEmail);
 
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("id", kakaoId);

@@ -30,12 +30,14 @@ class MemberRepositoryTest extends IntegrationTestSupport {
     void findByEmail() {
         // given
         Long kakaoId = 1234567890L;
+        String testEmail = "test@test.com";
         Member member = Member.builder()
             .kakaoId(kakaoId)
             .nickname("테스트유저")
             .provider(OAuth2Provider.KAKAO)
             .totalQuestionCount(0L)
             .correctAnswerCount(0L)
+            .kakaoEmail(testEmail)
             .build();
         memberRepository.save(member);
 
@@ -54,12 +56,15 @@ class MemberRepositoryTest extends IntegrationTestSupport {
         //given
         Long kakaoId = 1234567890L;
         String nickname = "유니크 닉네임";
+        String testEmail = "test@test.com";
+
         Member member = Member.builder()
             .kakaoId(kakaoId)
             .nickname(nickname)
             .provider(OAuth2Provider.KAKAO)
             .totalQuestionCount(0L)
             .correctAnswerCount(0L)
+            .kakaoEmail(testEmail)
             .build();
         memberRepository.save(member);
 
