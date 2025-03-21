@@ -359,9 +359,9 @@ class AnswerServiceTest extends IntegrationTestSupport {
         MemberLevelResponse response = answerService.getMemberLevel(memberId);
 
         // then
-        assertThat(response.level()).isEqualTo(1);
+        assertThat(response.level()).isEqualTo(0);
         assertThat(response.currentExp()).isEqualTo(0);
-        assertThat(response.nextExp()).isEqualTo(30);
+        assertThat(response.nextExp()).isEqualTo(0);
     }
 
     @DisplayName("getMemberLevel()은 경험치 40일 때 올바른 레벨 정보를 반환해야 한다.")
@@ -422,7 +422,7 @@ class AnswerServiceTest extends IntegrationTestSupport {
 
         // then
         assertThat(response.level()).isEqualTo(10);
-        assertThat(response.currentExp()).isEqualTo(275);
-        assertThat(response.nextExp()).isEqualTo(270);
+        assertThat(response.currentExp()).isEqualTo(5);
+        assertThat(response.nextExp()).isEqualTo(0);
     }
 }

@@ -201,12 +201,11 @@ public class AnswerService {
             stats.incorrectAnswerCount().intValue());
         int level = calculateLevel(exp);
 
-        boolean isMaxLevel = (level == MAX_LEVEL);
-        int baseIndex = isMaxLevel ? (level - 2) : (level - 1);
-        int topIndex = isMaxLevel ? (level - 1) : level;
+        if (level == 0) return MemberLevelResponse.of(0, 0, 0);
 
-        int currentExp = exp - LEVEL_EXP_TABLE[baseIndex];
-        int nextExp = LEVEL_EXP_TABLE[topIndex] - LEVEL_EXP_TABLE[baseIndex];
+        int currentExp = exp - LEVEL_EXP_TABLE[level - 1];
+        int nextExp = (level == MAX_LEVEL) ?
+            0 : LEVEL_EXP_TABLE[level] - LEVEL_EXP_TABLE[level - 1];
 
         return MemberLevelResponse.of(level, currentExp, nextExp);
     }
@@ -218,6 +217,8 @@ public class AnswerService {
     }
 
     private int calculateLevel(int exp) {
+        if (exp == 0) return 0;
+
         double val = (1 + Math.sqrt(1 + (4.0 * exp / 15.0))) / 2.0;
         int level = (int) Math.floor(val);
 
