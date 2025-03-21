@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MemberService {
 
     private final MemberRepository memberRepository;
@@ -47,5 +48,10 @@ public class MemberService {
         refreshTokenRepository.deleteByMemberId(id);
         memberRepository.delete(member);
         answerVideoCleanupService.deleteAllS3Objects(id);
+    }
+
+    public Member getMemberInfo(Long id) {
+        return memberRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다: " + id));
     }
 }
