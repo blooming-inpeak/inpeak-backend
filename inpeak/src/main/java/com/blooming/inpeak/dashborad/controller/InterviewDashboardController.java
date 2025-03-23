@@ -17,7 +17,7 @@ public class InterviewDashboardController {
 
     private final InterviewDashboardService interviewDashboardService;
 
-    @GetMapping("/interview")
+    @GetMapping("/api/interview")
     public ResponseEntity<InterviewDashboardResponse> getDashboard(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @RequestParam LocalDate startDate
