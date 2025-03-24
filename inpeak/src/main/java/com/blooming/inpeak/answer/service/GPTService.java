@@ -23,6 +23,9 @@ public class GPTService {
     @Value("${openai.prompt}")
     private String prompt;
 
+    @Value("${openai.models.format}")
+    private String format;
+
     private final RestTemplate restTemplate;
 
     /**
@@ -46,7 +49,7 @@ public class GPTService {
             new Message("user", List.of(
                 Map.of("type", "text", "text", "면접 질문: " + questionContent),
                 Map.of("type", "input_audio", "input_audio",
-                    Map.of("data", audioFile, "format", "wav"))
+                    Map.of("data", audioFile, "format", format))
             ))
         );
     }
