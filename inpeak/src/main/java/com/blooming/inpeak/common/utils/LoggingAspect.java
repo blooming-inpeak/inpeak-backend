@@ -15,6 +15,10 @@ public class LoggingAspect {
 
     @Around("execution(* com.blooming.inpeak..service.*.*(..))")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+        if (joinPoint.getSignature().getName().equals("createAnswer")) {
+            return joinPoint.proceed(); // base64 파일이 너무 길어서 로깅 안합니다..
+        }
+
         long start = System.currentTimeMillis();
         String methodName = joinPoint.getSignature().toShortString();
         Object[] args = joinPoint.getArgs();

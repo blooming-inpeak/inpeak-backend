@@ -16,4 +16,6 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
     List<Interview> findByMemberIdAndStartDateBetween(Long memberId, LocalDate start, LocalDate end);
 
     void deleteByMemberId(Long id);
+
+    boolean existsByMemberId(Long memberId);
 }

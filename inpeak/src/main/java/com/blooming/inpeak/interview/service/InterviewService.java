@@ -1,6 +1,7 @@
 package com.blooming.inpeak.interview.service;
 
 import com.blooming.inpeak.interview.domain.Interview;
+import com.blooming.inpeak.interview.dto.response.CalendarListResponse;
 import com.blooming.inpeak.interview.dto.response.CalendarResponse;
 import com.blooming.inpeak.interview.dto.response.RemainingInterviewsResponse;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
@@ -36,14 +37,17 @@ public class InterviewService {
      * @param year     년
      * @return 인터뷰 시간, 아이디를 남은 리스트
      */
-    public List<CalendarResponse> getCalendar(Long memberId, int month, int year) {
+    public CalendarListResponse getCalendar(Long memberId, int month, int year) {
         LocalDate startOfMonth = LocalDate.of(year, month, 1);
         LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
 
         List<Interview> result = interviewRepository.findByMemberIdAndStartDateBetween(memberId,
             startOfMonth, endOfMonth);
 
-        return result.stream().map(CalendarResponse::from).toList();
+        boolean exists = interviewRepository.existsByMemberId(memberId);
+
+        List<CalendarResponse> list = result.stream().map(CalendarResponse::from).toList();
+        return CalendarListResponse.from(list, exists);
     }
 
     /**

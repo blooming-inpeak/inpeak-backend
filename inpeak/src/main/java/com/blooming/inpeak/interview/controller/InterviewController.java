@@ -1,5 +1,6 @@
 package com.blooming.inpeak.interview.controller;
 
+import com.blooming.inpeak.interview.dto.response.CalendarListResponse;
 import com.blooming.inpeak.interview.dto.response.CalendarResponse;
 import com.blooming.inpeak.interview.dto.response.InterviewStartResponse;
 import com.blooming.inpeak.interview.service.InterviewService;
@@ -26,7 +27,7 @@ public class InterviewController {
     private final InterviewStartService interviewStartService;
 
     @GetMapping("/calendar")
-    public ResponseEntity<List<CalendarResponse>> getCalendar(
+    public ResponseEntity<CalendarListResponse> getCalendar(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @RequestParam int month,
         @RequestParam int year

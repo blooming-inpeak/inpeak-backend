@@ -95,7 +95,7 @@ public class AnswerService {
         Interview interview = answers.stream()
             .map(Answer::getInterview)
             .findFirst()
-            .orElseThrow(() -> new IllegalStateException("해당 날짜에 진행된 인터뷰가 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("해당 날짜에 진행된 인터뷰가 없습니다."));
 
         return InterviewWithAnswersResponse.from(interview, answers);
     }

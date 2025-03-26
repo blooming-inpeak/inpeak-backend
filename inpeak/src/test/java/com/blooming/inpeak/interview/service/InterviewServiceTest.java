@@ -3,6 +3,7 @@ package com.blooming.inpeak.interview.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.blooming.inpeak.interview.domain.Interview;
+import com.blooming.inpeak.interview.dto.response.CalendarListResponse;
 import com.blooming.inpeak.interview.dto.response.CalendarResponse;
 import com.blooming.inpeak.interview.dto.response.RemainingInterviewsResponse;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
@@ -64,11 +65,12 @@ class InterviewServiceTest extends IntegrationTestSupport {
         interviewRepository.save(Interview.of(MEMBER_ID, LocalDate.of(2025, 2, 15)));
 
         // when
-        List<CalendarResponse> response = interviewService.getCalendar(MEMBER_ID, 2, 2025);
+        CalendarListResponse response = interviewService.getCalendar(MEMBER_ID, 2, 2025);
 
         // then
-        assertThat(response).hasSize(3); // 3개가 조회되어야 함
-        assertThat(response)
+        assertThat(response.exists()).isTrue(); // 인터뷰 이력이 있음
+        assertThat(response.calendarList()).hasSize(3);
+        assertThat(response.calendarList())
             .extracting(CalendarResponse::date)
             .containsExactlyInAnyOrder(
                 LocalDate.of(2025, 2, 5),
@@ -81,14 +83,16 @@ class InterviewServiceTest extends IntegrationTestSupport {
     @Transactional
     @DisplayName("회원이 해당 월에 인터뷰를 진행하지 않았다면 빈 리스트를 반환해야 한다.")
     void getCalendar_ShouldReturnEmptyList_WhenNoInterviews() {
-        //given
+        // given (2월에만 인터뷰 기록이 있음)
         interviewRepository.save(Interview.of(MEMBER_ID, LocalDate.of(2025, 2, 5)));
         interviewRepository.save(Interview.of(MEMBER_ID, LocalDate.of(2025, 2, 10)));
 
         // when
-        List<CalendarResponse> response = interviewService.getCalendar(MEMBER_ID, 1, 2025);
+        CalendarListResponse response = interviewService.getCalendar(MEMBER_ID, 1, 2025);
 
         // then
-        assertThat(response).isEmpty(); // 인터뷰 기록이 없으므로 빈 리스트 반환
+        assertThat(response.calendarList()).isEmpty(); // 1월엔 인터뷰 없음
+        assertThat(response.exists()).isTrue(); // 하지만 인터뷰 이력은 있음
     }
+
 }
