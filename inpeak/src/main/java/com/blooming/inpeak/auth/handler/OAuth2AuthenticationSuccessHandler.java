@@ -6,13 +6,14 @@ import com.blooming.inpeak.auth.utils.JwtTokenProvider;
 import com.blooming.inpeak.member.domain.Member;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
 import com.blooming.inpeak.member.repository.MemberRepository;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     @Value("${jwt.refreshToken.expiration}")
     private long refreshTokenExpiration;
 
-    // 쿠키 관련 상수 추가
+    // 쿠키 관련 상수
     private static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
 
@@ -56,24 +57,26 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         storeOrGenerate(member, refreshToken);
 
-        // 토큰을 쿠키에 저장
         addTokenCookie(
-            response, ACCESS_TOKEN_COOKIE_NAME, accessToken, (int) accessTokenDuration.toSeconds()
+            response, ACCESS_TOKEN_COOKIE_NAME, accessToken, accessTokenDuration.toSeconds()
         );
         addTokenCookie(
-            response, REFRESH_TOKEN_COOKIE_NAME, refreshToken, (int) refreshTokenDuration.toSeconds()
+            response, REFRESH_TOKEN_COOKIE_NAME, refreshToken, refreshTokenDuration.toSeconds()
         );
 
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
 
-    private void addTokenCookie(HttpServletResponse response, String name, String value, int maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-//        cookie.setSecure(true); // HTTPS 환경에서만 활성화
-        cookie.setMaxAge(maxAge);
-        response.addCookie(cookie);
+    private void addTokenCookie(HttpServletResponse response, String name, String value, Long maxAge) {
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+            .path("/")
+            .httpOnly(true)
+            .maxAge(maxAge)
+            .sameSite("Strict")
+            .secure(true)
+            .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     private void storeOrGenerate(Member member, String refreshToken) {

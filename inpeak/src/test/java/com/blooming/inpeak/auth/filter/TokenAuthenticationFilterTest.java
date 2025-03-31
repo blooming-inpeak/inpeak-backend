@@ -1,21 +1,28 @@
 package com.blooming.inpeak.auth.filter;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 
+import com.blooming.inpeak.auth.domain.RefreshToken;
+import com.blooming.inpeak.auth.repository.RefreshTokenRepository;
 import com.blooming.inpeak.auth.utils.JwtTokenProvider;
 import com.blooming.inpeak.member.domain.Member;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
 import com.blooming.inpeak.member.repository.MemberRepository;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.Duration;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +31,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
@@ -49,41 +57,18 @@ class TokenAuthenticationFilterTest {
     @Mock
     private MemberRepository memberRepository;
 
-    @DisplayName("유효한 토큰인 경우 다음 필터로 진행된다")
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+
+    private static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
+    private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+
+    @DisplayName("액세스 토큰 쿠키가 없는 경우 401 응답을 반환한다")
     @Test
-    void whenValidToken_thenProceedsToNextFilter() throws Exception {
+    void whenNoAccessTokenCookie_thenReturnsUnauthorized() throws Exception {
         // given
-        String token = "valid-token";
-        String userId = "1";
-        Member mockMember = mock(Member.class);
+        given(request.getCookies()).willReturn(null); // 쿠키 없음
 
-        given(request.getServletPath()).willReturn("/healthcheck");
-
-        given(request.getHeader("Authorization")).willReturn("Bearer " + token);
-        given(jwtTokenProvider.validateToken(token)).willReturn(true);
-        given(jwtTokenProvider.getUserIdFromToken(token)).willReturn(userId);
-        given(memberRepository.findById(1L)).willReturn(Optional.of(mockMember));
-        given(mockMember.registrationCompleted()).willReturn(true);
-
-        // SecurityContext와 관련된 추가 모킹
-        MemberPrincipal mockPrincipal = mock(MemberPrincipal.class);
-        try (MockedStatic<MemberPrincipal> mockedStatic = mockStatic(MemberPrincipal.class)) {
-            mockedStatic.when(
-                () -> MemberPrincipal.create(any(Member.class), any())).thenReturn(mockPrincipal);
-
-            // when
-            tokenAuthenticationFilter.doFilterInternal(request, response, filterChain);
-
-            // then
-            then(filterChain).should().doFilter(request, response);
-        }
-    }
-
-    @DisplayName("Authorization 헤더가 없는 경우 401 응답을 반환한다")
-    @Test
-    void whenNoAuthorizationHeader_thenReturnsUnauthorized() throws Exception {
-        // given
-        given(request.getHeader("Authorization")).willReturn(null);
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
         given(response.getWriter()).willReturn(printWriter);
@@ -98,25 +83,32 @@ class TokenAuthenticationFilterTest {
 
         printWriter.flush();
         String responseBody = stringWriter.toString();
-        assert(responseBody.contains("헤더에 액세스 토큰이 없거나, Bearer 접두어가 빠져있습니다"));
+        assert(responseBody.contains("accessToken이 없습니다"));
     }
 
     @DisplayName("회원 등록이 완료되지 않은 사용자가 일반 API에 접근하면 488 응답을 반환한다")
     @Test
     void whenUserRegistrationNotCompleted_andAccessRegularAPI_thenReturns488() throws Exception {
         // given
-        String token = "valid-token";
+        String accessToken = "valid-access-token";
         String userId = "1";
         Member mockMember = mock(Member.class);
 
-        given(request.getServletPath()).willReturn("/api/member/profile");
-        given(request.getHeader("Authorization")).willReturn("Bearer " + token);
-        given(jwtTokenProvider.validateToken(token)).willReturn(true);
-        given(jwtTokenProvider.getUserIdFromToken(token)).willReturn(userId);
-        given(memberRepository.findById(1L)).willReturn(Optional.of(mockMember));
-        given(mockMember.registrationCompleted()).willReturn(false);
+        // 쿠키 설정
+        Cookie accessTokenCookie = new Cookie(ACCESS_TOKEN_COOKIE_NAME, accessToken);
+        Cookie[] cookies = new Cookie[] { accessTokenCookie };
+        given(request.getCookies()).willReturn(cookies);
 
-        // StringWriter와 PrintWriter를 사용하여 응답 캡처
+        // 일반 API 경로 설정
+        given(request.getServletPath()).willReturn("/api/member/profile");
+
+        // 토큰 및 사용자 정보
+        given(jwtTokenProvider.validateToken(accessToken)).willReturn(true);
+        given(jwtTokenProvider.getUserIdFromToken(accessToken)).willReturn(userId);
+        given(memberRepository.findById(1L)).willReturn(Optional.of(mockMember));
+        given(mockMember.registrationCompleted()).willReturn(false); // 등록 미완료
+
+        // 응답 캡처 설정
         StringWriter stringWriter = new StringWriter();
         PrintWriter writer = new PrintWriter(stringWriter);
         given(response.getWriter()).willReturn(writer);
@@ -135,18 +127,25 @@ class TokenAuthenticationFilterTest {
     @Test
     void whenUserRegistrationNotCompleted_andAccessRegistrationAPI_thenProceedsToNextFilter() throws Exception {
         // given
-        String token = "valid-token";
+        String accessToken = "valid-access-token";
         String userId = "1";
         Member mockMember = mock(Member.class);
 
-        given(request.getServletPath()).willReturn("/interest/list");
-        given(request.getHeader("Authorization")).willReturn("Bearer " + token);
-        given(jwtTokenProvider.validateToken(token)).willReturn(true);
-        given(jwtTokenProvider.getUserIdFromToken(token)).willReturn(userId);
-        given(memberRepository.findById(1L)).willReturn(Optional.of(mockMember));
-        given(mockMember.registrationCompleted()).willReturn(false);
+        // 쿠키 설정
+        Cookie accessTokenCookie = new Cookie(ACCESS_TOKEN_COOKIE_NAME, accessToken);
+        Cookie[] cookies = new Cookie[] { accessTokenCookie };
+        given(request.getCookies()).willReturn(cookies);
 
-        // SecurityContext와 관련된 추가 모킹
+        // 등록 관련 API 경로 설정
+        given(request.getServletPath()).willReturn("/api/interest/list");
+
+        // 토큰 및 사용자 정보
+        given(jwtTokenProvider.validateToken(accessToken)).willReturn(true);
+        given(jwtTokenProvider.getUserIdFromToken(accessToken)).willReturn(userId);
+        given(memberRepository.findById(1L)).willReturn(Optional.of(mockMember));
+        given(mockMember.registrationCompleted()).willReturn(false); // 등록 미완료
+
+        // SecurityContext 관련 모킹
         MemberPrincipal mockPrincipal = mock(MemberPrincipal.class);
         try (MockedStatic<MemberPrincipal> mockedStatic = mockStatic(MemberPrincipal.class)) {
             mockedStatic.when(() -> MemberPrincipal.create(any(Member.class), any())).thenReturn(mockPrincipal);
