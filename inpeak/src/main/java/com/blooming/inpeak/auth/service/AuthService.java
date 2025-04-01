@@ -4,9 +4,9 @@ import com.blooming.inpeak.auth.domain.RefreshToken;
 import com.blooming.inpeak.auth.dto.TokenResponse;
 import com.blooming.inpeak.auth.repository.RefreshTokenRepository;
 import com.blooming.inpeak.auth.utils.JwtTokenProvider;
+import com.blooming.inpeak.auth.utils.TokenExtractor;
 import com.blooming.inpeak.member.domain.Member;
 import com.blooming.inpeak.member.repository.MemberRepository;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
@@ -34,6 +34,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenExtractor tokenExtractor;
 
     @Transactional
     public void logout(Long memberId, HttpServletResponse response) {
@@ -45,39 +46,12 @@ public class AuthService {
     }
 
     /**
-     * 토큰 재발급 - 리프레시 토큰을 사용하여 새로운 액세스 토큰과 리프레시 토큰 발급
+     * 토큰 재발급 - 이미 인증된 사용자의 멤버 ID를 사용
      */
     @Transactional
-    public TokenResponse reissueToken(HttpServletRequest request, HttpServletResponse response) {
-        // 쿠키에서 리프레시 토큰 추출
-        String refreshTokenValue = extractTokenFromCookie(request);
-
-        // 쿠키가 없는 경우(이전 버전 호환성) Authorization 헤더 확인
-        if (refreshTokenValue == null) {
-            refreshTokenValue = extractTokenFromAuthHeader(request);
-        }
-
-        if (refreshTokenValue == null) {
-            throw new IllegalArgumentException("Refresh 토큰이 존재하지 않습니다.");
-        }
-
-        if (!jwtTokenProvider.validateToken(refreshTokenValue)) {
-            // 쿠키 무효화 후 예외 발생
-            removeTokenCookies(response);
-            throw new IllegalArgumentException("유효하지 않은 Refresh 토큰입니다.");
-        }
-
-        RefreshToken refreshToken = refreshTokenRepository.findByRefreshToken(refreshTokenValue)
-            .orElseThrow(() -> {
-                removeTokenCookies(response); // 쿠키 무효화
-                return new IllegalArgumentException("저장된 Refresh 토큰이 존재하지 않습니다.");
-            });
-
-        Member member = memberRepository.findById(refreshToken.getMemberId())
-            .orElseThrow(() -> {
-                removeTokenCookies(response); // 쿠키 무효화
-                return new IllegalArgumentException("회원 정보가 존재하지 않습니다.");
-            });
+    public TokenResponse reissueToken(Long memberId, HttpServletResponse response) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("회원 정보가 존재하지 않습니다."));
 
         // 새로운 토큰 발급
         Duration accessTokenDuration = Duration.ofMillis(accessTokenExpiration);
@@ -87,6 +61,12 @@ public class AuthService {
         String newRefreshToken = jwtTokenProvider.makeToken(member, refreshTokenDuration);
 
         // DB에 새로운 리프레시 토큰 저장
+        RefreshToken refreshToken = refreshTokenRepository.findByMemberId(memberId)
+            .orElse(RefreshToken.builder()
+                .memberId(memberId)
+                .refreshToken(newRefreshToken)
+                .build());
+
         refreshToken.update(newRefreshToken);
         refreshTokenRepository.save(refreshToken);
 
@@ -102,27 +82,27 @@ public class AuthService {
         );
     }
 
-    private String extractTokenFromCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (AuthService.REFRESH_TOKEN_COOKIE_NAME.equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
-    }
+    @Transactional
+    public TokenResponse reissueTokenByRefreshToken(HttpServletRequest request, HttpServletResponse response) {
+        // 리프레시 토큰 추출
+        String refreshTokenValue = tokenExtractor.extractRefreshToken(request);
 
-    /**
-     * Authorization 헤더에서 토큰 추출 (이전 버전 호환성)
-     */
-    private String extractTokenFromAuthHeader(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
+        if (refreshTokenValue == null) {
+            throw new IllegalArgumentException("Refresh 토큰이 존재하지 않습니다.");
         }
-        return null;
+
+        if (!jwtTokenProvider.validateToken(refreshTokenValue)) {
+            removeTokenCookies(response);
+            throw new IllegalArgumentException("유효하지 않은 Refresh 토큰입니다.");
+        }
+
+        RefreshToken refreshToken = refreshTokenRepository.findByRefreshToken(refreshTokenValue)
+            .orElseThrow(() -> {
+                removeTokenCookies(response);
+                return new IllegalArgumentException("저장된 Refresh 토큰이 존재하지 않습니다.");
+            });
+
+        return reissueToken(refreshToken.getMemberId(), response);
     }
 
     /**
