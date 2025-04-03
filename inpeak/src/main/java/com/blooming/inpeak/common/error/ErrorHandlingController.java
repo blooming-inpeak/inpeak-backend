@@ -2,6 +2,7 @@ package com.blooming.inpeak.common.error;
 
 import static com.blooming.inpeak.common.error.ErrorBuildFactory.*;
 
+import com.blooming.inpeak.common.error.exception.*;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -35,5 +36,40 @@ public class ErrorHandlingController {
     protected ErrorResponse handleIllegalArgumentException(IllegalArgumentException e) {
         log.error("올바르지 않은 요청 값이 전달되었습니다. " + e.getMessage());
         return buildError(ErrorCode.INPUT_VALUE_INVALID);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    protected ErrorResponse handleBadRequestException(BadRequestException e) {
+        log.error("잘못된 요청: {}", e.getMessage());
+        return buildError(ErrorCode.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    protected ErrorResponse handleUnauthorizedException(UnauthorizedException e) {
+        log.error("인증 실패: {}", e.getMessage());
+        return buildError(ErrorCode.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    protected ErrorResponse handleForbiddenException(ForbiddenException e) {
+        log.error("접근 거부: {}", e.getMessage());
+        return buildError(ErrorCode.FORBIDDEN);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    protected ErrorResponse handleNotFoundException(NotFoundException e) {
+        log.error("리소스를 찾을 수 없음: {}", e.getMessage());
+        return buildError(ErrorCode.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    protected ErrorResponse handleConflictException(ConflictException e) {
+        log.error("요청 충돌: {}", e.getMessage());
+        return buildError(ErrorCode.CONFLICT);
     }
 }
