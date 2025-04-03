@@ -13,6 +13,7 @@ import com.blooming.inpeak.answer.dto.response.RecentAnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.RecentAnswerResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
+import com.blooming.inpeak.common.error.exception.NotFoundException;
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
 import com.blooming.inpeak.question.domain.Question;
@@ -246,25 +247,28 @@ class AnswerServiceTest extends IntegrationTestSupport {
         Answer answer = answerRepository.findAll().get(0);
 
         // when
-        answerService.updateUnderstood(answer.getId(), true);
+        answerService.updateUnderstood(answer.getId(), true, memberId); // ← 변경된 부분
 
         // then
         Answer updatedAnswer = answerRepository.findById(answer.getId()).orElseThrow();
         assertThat(updatedAnswer.isUnderstood()).isTrue();
     }
 
-    @DisplayName("존재하지 않는 답변 ID로 updateUnderstood()를 호출하면 예외가 발생해야 한다.")
+
+    @DisplayName("존재하지 않는 답변 ID로 updateUnderstood()를 호출하면 NotFoundException이 발생해야 한다.")
     @Transactional
     @Test
     void updateUnderstood_ShouldThrowException_WhenAnswerNotFound() {
         // given
         Long nonExistingId = 9999L;
+        Long memberId = 1L;
 
         // when & then
-        assertThatThrownBy(() -> answerService.updateUnderstood(nonExistingId, true))
-            .isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> answerService.updateUnderstood(nonExistingId, true, memberId)) // ← memberId 추가
+            .isInstanceOf(NotFoundException.class)
             .hasMessage("해당 답변이 존재하지 않습니다.");
     }
+
 
     @DisplayName("updateComment()는 답변의 코멘트를 정상적으로 변경해야 한다.")
     @Transactional
@@ -308,11 +312,12 @@ class AnswerServiceTest extends IntegrationTestSupport {
 
         // when & then
         assertThatThrownBy(() -> answerService.updateComment(nonExistingId, comment))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(NotFoundException.class) // ✅ 변경됨
             .hasMessage("해당 답변이 존재하지 않습니다.");
     }
 
-    @DisplayName("getAnswer()는 특정 답변 ID로 답변을 조회하면 올바른 응답을 반환해야 한다.")
+
+    @DisplayName("getAnswer()는 interviewId, questionId, memberId로 답변을 조회하면 올바른 응답을 반환해야 한다.")
     @Transactional
     @Test
     void getAnswer_ShouldReturnCorrectAnswer() {
@@ -330,7 +335,7 @@ class AnswerServiceTest extends IntegrationTestSupport {
         entityManager.clear();
 
         // when
-        AnswerDetailResponse response = answerService.getAnswer(answer.getId());
+        AnswerDetailResponse response = answerService.getAnswer(interview.getId(), question.getId(), memberId);
 
         // then
         assertThat(response).isNotNull();
@@ -338,18 +343,21 @@ class AnswerServiceTest extends IntegrationTestSupport {
         assertThat(response.answerStatus()).isEqualTo(AnswerStatus.CORRECT);
     }
 
-    @DisplayName("getAnswer()는 존재하지 않는 답변 ID로 조회하면 예외를 발생시켜야 한다.")
+    @DisplayName("getAnswer()는 존재하지 않는 답변이면 NotFoundException을 발생시켜야 한다.")
     @Transactional
     @Test
     void getAnswer_ShouldThrowException_WhenAnswerNotFound() {
         // given
-        Long nonExistingId = 9999L;
+        Long fakeInterviewId = 9999L;
+        Long fakeQuestionId = 8888L;
+        Long memberId = 1L;
 
         // when & then
-        assertThatThrownBy(() -> answerService.getAnswer(nonExistingId))
-            .isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> answerService.getAnswer(fakeInterviewId, fakeQuestionId, memberId))
+            .isInstanceOf(NotFoundException.class)
             .hasMessage("해당 답변이 존재하지 않습니다.");
     }
+
 
     @DisplayName("getMemberLevel()은 경험치가 0일 때 올바른 레벨 정보를 반환해야 한다.")
     @Transactional

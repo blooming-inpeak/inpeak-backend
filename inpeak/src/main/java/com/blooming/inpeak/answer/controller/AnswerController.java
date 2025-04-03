@@ -43,7 +43,8 @@ public class AnswerController {
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @RequestBody AnswerSkipRequest request
     ) {
-        AnswerIDResponse response = answerService.skipAnswer(memberPrincipal.id(), request.questionId(), request.interviewId());
+        AnswerIDResponse response = answerService.skipAnswer(memberPrincipal.id(),
+            request.questionId(), request.interviewId());
         return ResponseEntity.ok(response);
     }
 
@@ -96,15 +97,17 @@ public class AnswerController {
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @RequestBody AnswerCreateRequest answerCreateRequest
     ) {
-        AnswerIDResponse response = answerService.createAnswer(answerCreateRequest.toCommand(memberPrincipal.id()));
+        AnswerIDResponse response = answerService.createAnswer(
+            answerCreateRequest.toCommand(memberPrincipal.id()));
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/understood")
     public ResponseEntity<Void> updateUnderstood(
-        @RequestBody UnderstoodUpdateRequest request
+        @RequestBody UnderstoodUpdateRequest request,
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal
     ) {
-        answerService.updateUnderstood(request.answerId(), request.isUnderstood());
+        answerService.updateUnderstood(request.answerId(), request.isUnderstood(), memberPrincipal.id());
         return ResponseEntity.ok().build();
     }
 
@@ -126,9 +129,12 @@ public class AnswerController {
 
     @GetMapping
     public ResponseEntity<AnswerDetailResponse> getAnswer(
-        @RequestParam Long answerId
+        @RequestParam Long interviewId,
+        @RequestParam Long questionId,
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal
     ) {
-        AnswerDetailResponse response = answerService.getAnswer(answerId);
+        AnswerDetailResponse response = answerService.getAnswer(interviewId, questionId,
+            memberPrincipal.id());
         return ResponseEntity.ok(response);
     }
 }

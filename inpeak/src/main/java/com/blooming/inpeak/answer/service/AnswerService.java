@@ -14,6 +14,9 @@ import com.blooming.inpeak.answer.dto.response.RecentAnswerResponse;
 import com.blooming.inpeak.answer.dto.response.UserStatsResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
+import com.blooming.inpeak.common.error.exception.ConflictException;
+import com.blooming.inpeak.common.error.exception.ForbiddenException;
+import com.blooming.inpeak.common.error.exception.NotFoundException;
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.answer.dto.response.MemberLevelResponse;
 import com.blooming.inpeak.question.domain.Question;
@@ -49,6 +52,10 @@ public class AnswerService {
      */
     @Transactional
     public AnswerIDResponse skipAnswer(Long memberId, Long questionId, Long interviewId) {
+        if (answerRepository.existsByInterviewIdAndQuestionId(interviewId, questionId)) {
+            throw new ConflictException("이미 답변이 존재하는 질문입니다.");
+        }
+
         Answer skippedAnswer = Answer.ofSkipped(memberId, questionId, interviewId);
         answerRepository.save(skippedAnswer);
 
@@ -95,7 +102,7 @@ public class AnswerService {
         Interview interview = answers.stream()
             .map(Answer::getInterview)
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("해당 날짜에 진행된 인터뷰가 없습니다."));
+            .orElseThrow(() -> new NotFoundException("해당 날짜에 진행된 인터뷰가 없습니다."));
 
         return InterviewWithAnswersResponse.from(interview, answers);
     }
@@ -124,8 +131,13 @@ public class AnswerService {
      */
     @Transactional
     public AnswerIDResponse createAnswer(AnswerCreateCommand command) {
+        if (answerRepository.existsByInterviewIdAndQuestionId(command.interviewId(),
+            command.questionId())) {
+            throw new ConflictException("이미 답변이 존재하는 질문입니다.");
+        }
+
         Question question = questionRepository.findById(command.questionId())
-            .orElseThrow(() -> new IllegalArgumentException("해당 질문이 존재하지 않습니다."));
+            .orElseThrow(() -> new NotFoundException("해당 질문이 존재하지 않습니다."));
 
         String feedback = gptService.makeGPTResponse(command.audioFile(), question.getContent());
 
@@ -136,15 +148,20 @@ public class AnswerService {
     }
 
     /**
-     * 답변을 이해했는지 여부를 업데이트하는 메서드
+     * 답변의 상태를 업데이트하는 메서드
      *
-     * @param answerId     답변 ID
-     * @param isUnderstood 사용자가 이해했는지 여부
+     * @param answerId 답변 ID
+     * @param isUnderstood 이해 여부
+     * @param memberId  사용자 ID
      */
     @Transactional
-    public void updateUnderstood(Long answerId, boolean isUnderstood) {
+    public void updateUnderstood(Long answerId, boolean isUnderstood, Long memberId) {
         Answer answer = answerRepository.findById(answerId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 답변이 존재하지 않습니다."));
+            .orElseThrow(() -> new NotFoundException("해당 답변이 존재하지 않습니다."));
+
+        if (!answer.getMemberId().equals(memberId)) {
+            throw new ForbiddenException("해당 답변에 대한 접근 권한이 없습니다.");
+        }
 
         answer.setUnderstood(isUnderstood);
         answerRepository.save(answer);
@@ -159,7 +176,7 @@ public class AnswerService {
     @Transactional
     public void updateComment(Long answerId, String comment) {
         Answer answer = answerRepository.findById(answerId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 답변이 존재하지 않습니다."));
+            .orElseThrow(() -> new NotFoundException("해당 답변이 존재하지 않습니다."));
 
         answer.setComment(comment);
         answerRepository.save(answer);
@@ -176,14 +193,20 @@ public class AnswerService {
     }
 
     /**
-     * 답변 ID로 답변을 조회하는 메서드
+     * 특정 질문에 대한 답변을 조회하는 메서드
      *
-     * @param answerId 답변 ID
-     * @return 답변
+     * @param interviewId 인터뷰 ID
+     * @param questionId  질문 ID
+     * @param memberId    사용자 ID
+     * @return 답변 상세 정보
      */
-    public AnswerDetailResponse getAnswer(Long answerId) {
-        Answer answer = answerRepository.findAnswerById(answerId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 답변이 존재하지 않습니다."));
+    public AnswerDetailResponse getAnswer(Long interviewId, Long questionId, Long memberId) {
+        Answer answer = answerRepository.findByInterviewIdAndQuestionId(interviewId, questionId)
+            .orElseThrow(() -> new NotFoundException("해당 답변이 존재하지 않습니다."));
+
+        if (!answer.getMemberId().equals(memberId)) {
+            throw new ForbiddenException("해당 답변에 대한 접근 권한이 없습니다.");
+        }
 
         return AnswerDetailResponse.from(answer);
     }
