@@ -7,26 +7,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+
 @Aspect
 @Component
 public class LoggingAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
+    private static final int MAX_STRING_LENGTH = 200; // 너무 긴 문자열은 생략
 
-    @Around("execution(* com.blooming.inpeak..service.*.*(..))")
+    @Around("execution(* com.blooming.inpeak..service..*.*(..))")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
-        if (joinPoint.getSignature().getName().equals("createAnswer")) {
-            return joinPoint.proceed(); // base64 파일이 너무 길어서 로깅 안합니다..
-        }
-
         long start = System.currentTimeMillis();
         String methodName = joinPoint.getSignature().toShortString();
-        Object[] args = joinPoint.getArgs();
+        Object[] originalArgs = joinPoint.getArgs();
 
-        logger.info("[시작] 메서드: {} | 입력값: {}", methodName, args);
+        Object[] loggableArgs = Arrays.stream(originalArgs)
+            .map(arg -> {
+                if (arg instanceof String str && str.length() > MAX_STRING_LENGTH) {
+                    return "[내용 생략: 너무 긴 문자열]";
+                }
+                return arg;
+            }).toArray();
+
+        logger.info("[시작] 메서드: {} | 입력값: {}", methodName, loggableArgs);
 
         try {
-            Object result = joinPoint.proceed(); // 메서드 실행
+            Object result = joinPoint.proceed();
             long elapsedTime = System.currentTimeMillis() - start;
 
             logger.info("[종료] 메서드: {} | 실행 시간: {}ms | 반환값: {}", methodName, elapsedTime, result);
