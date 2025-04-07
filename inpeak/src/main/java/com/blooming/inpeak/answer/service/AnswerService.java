@@ -212,6 +212,24 @@ public class AnswerService {
     }
 
     /**
+     * 특정 질문에 대한 답변을 조회하는 메서드
+     *
+     * @param answerId   답변 ID
+     * @param memberId   사용자 ID
+     * @return 답변 상세 정보
+     */
+    public AnswerDetailResponse getAnswerById(Long answerId, Long memberId) {
+        Answer answer = answerRepository.findById(answerId)
+            .orElseThrow(() -> new NotFoundException("해당 답변이 존재하지 않습니다."));
+
+        if (!answer.getMemberId().equals(memberId)) {
+            throw new ForbiddenException("해당 답변에 대한 접근 권한이 없습니다.");
+        }
+
+        return AnswerDetailResponse.from(answer);
+    }
+
+    /**
      * 회원의 레벨 정보를 가져오는 메서드
      *
      * @param memberId 사용자 ID

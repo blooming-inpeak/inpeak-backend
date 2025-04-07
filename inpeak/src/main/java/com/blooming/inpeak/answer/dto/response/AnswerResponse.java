@@ -7,6 +7,7 @@ import lombok.Builder;
 
 @Builder
 public record AnswerResponse(
+    Long answerId,
     LocalDate dateTime,
     String questionContent,
     Long runningTime,
@@ -15,6 +16,7 @@ public record AnswerResponse(
 ) {
     public static AnswerResponse from (Answer answer) {
         return AnswerResponse.builder()
+            .answerId(answer.getId())  // 답변 ID
             .dateTime(answer.getInterview().getStartDate())  // 답변 작성 시간
             .questionContent(answer.getQuestion().getContent())  // 질문 제목
             .runningTime(answer.getRunningTime())  // 실행 시간
