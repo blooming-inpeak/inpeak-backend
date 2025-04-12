@@ -19,6 +19,7 @@ import com.blooming.inpeak.common.error.exception.ForbiddenException;
 import com.blooming.inpeak.common.error.exception.NotFoundException;
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.answer.dto.response.MemberLevelResponse;
+import com.blooming.inpeak.interview.repository.InterviewRepository;
 import com.blooming.inpeak.question.domain.Question;
 import com.blooming.inpeak.question.repository.QuestionRepository;
 import java.time.LocalDate;
@@ -39,6 +40,7 @@ public class AnswerService {
     private final AnswerRepositoryCustom answerRepositoryCustom;
     private final GPTService gptService;
     private final QuestionRepository questionRepository;
+    private final InterviewRepository interviewRepository;
 
     private static final int[] LEVEL_EXP_TABLE = {0, 30, 90, 180, 300, 450, 630, 840, 1080, 1350};
     private static final int MAX_LEVEL = LEVEL_EXP_TABLE.length;
@@ -98,12 +100,17 @@ public class AnswerService {
     public InterviewWithAnswersResponse getAnswersByDate(Long memberId, LocalDate date) {
         List<Answer> answers = answerRepository.findAnswersByMemberAndDate(memberId, date);
 
-        // ✅ 인터뷰가 한 개만 존재하므로 findFirst() 사용
-        Interview interview = answers.stream()
-            .map(Answer::getInterview)
-            .findFirst()
-            .orElseThrow(() -> new NotFoundException("해당 날짜에 진행된 인터뷰가 없습니다."));
+        if (answers.isEmpty()) {
+            // 🔍 인터뷰는 존재하지만 답변이 없는 케이스 확인을 위해 인터뷰만 따로 조회
+            Interview interview = interviewRepository.findByMemberIdAndStartDate(memberId, date)
+                .orElseThrow(() -> new NotFoundException("해당 날짜에 진행된 인터뷰가 없습니다."));
 
+            // 🔴 인터뷰는 있지만 답변이 없음
+            throw new ConflictException("해당 인터뷰에 대한 답변이 존재하지 않습니다.");
+        }
+
+        // ✅ 인터뷰도 있고, 답변도 있음
+        Interview interview = answers.get(0).getInterview(); // answer가 있으므로 get(0) 안전
         return InterviewWithAnswersResponse.from(interview, answers);
     }
 
