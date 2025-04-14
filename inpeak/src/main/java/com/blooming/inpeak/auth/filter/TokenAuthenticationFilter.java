@@ -8,6 +8,7 @@ import com.blooming.inpeak.member.domain.Member;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
 import com.blooming.inpeak.member.repository.MemberRepository;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -44,7 +45,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
 
-    private final List<String> REGISTRATION_PATHS = List.of(
+    private static final List<String> ALLOWED_UNREGISTERED_PATHS = List.of(
         "/api/interest",
         "/api/interest/list",
         "/api/auth/logout",
@@ -57,94 +58,92 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         HttpServletRequest request,
         HttpServletResponse response,
         FilterChain filterChain
+    ) throws IOException, ServletException {
+        String accessToken = extractAndValidateAccessToken(request, response);
+        if (accessToken == null) return;
+
+        String memberId = jwtTokenProvider.getUserIdFromToken(accessToken);
+        if (!isMemberAllowedToAccess(request, memberId)) {
+            sendRegistrationErrorResponse(response);
+            return;
+        }
+
+        authenticateMember(memberId);
+        filterChain.doFilter(request, response);
+    }
+
+    private String extractAndValidateAccessToken(
+        HttpServletRequest request,
+        HttpServletResponse response
     ) throws IOException {
         String accessToken = tokenExtractor.extractAccessToken(request);
 
-        // accessToken이 없는 경우
+        // 액세스 토큰 없음
         if (accessToken == null) {
-            sendErrorResponse(response, "accessToken이 없습니다");
-            return;
+            sendErrorResponse(response, "액세스 토큰이 없습니다");
+            return null;
         }
 
-        try {
-            // 토큰이 유효한 경우
-            if (jwtTokenProvider.validateToken(accessToken)) {
-                String userId = jwtTokenProvider.getUserIdFromToken(accessToken);
-                authenticateUser(userId, request, response);
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            // accessToken이 만료된 경우 - refreshToken 확인
-            log.debug("Access token 만료됨, refresh token으로 갱신 시도");
-            String refreshToken = tokenExtractor.extractRefreshToken(request);
-
-            if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
-                sendErrorResponse(response, "accessToken이 만료되었고, refreshToken도 유효하지 않습니다");
-                return;
-            }
-
-            // refreshToken이 유효한 경우, 새 토큰 발급
-            String userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
-
-            // DB에 저장된 토큰과 일치하는지 확인
-            RefreshToken savedRefreshToken = refreshTokenRepository.findByMemberId(Long.valueOf(userId))
-                .orElseThrow(() -> new IllegalArgumentException("저장된 Refresh 토큰이 존재하지 않습니다."));
-
-            if (!savedRefreshToken.getRefreshToken().equals(refreshToken)) {
-                removeTokenCookies(response);
-                sendErrorResponse(response, "유효하지 않은 Refresh 토큰입니다.");
-                return;
-            }
-
-            // 토큰 재발급 및 쿠키 설정
-            Member member = memberRepository.findById(Long.valueOf(userId))
-                .orElseThrow(() -> new IllegalArgumentException("회원 정보가 존재하지 않습니다."));
-
-            // 새 토큰 발급
-            String newAccessToken = reissueAccessToken(member, savedRefreshToken, response);
-
-            // SecurityContext 설정
-            authenticateUser(userId, request, response);
-            filterChain.doFilter(request, response);
-
-        } catch (Exception e) {
-            sendErrorResponse(response, "인증 처리 중 오류가 발생했습니다: " + e.getMessage());
+        // 액세스 토큰 유효한 경우 바로 반환
+        if (jwtTokenProvider.validateToken(accessToken)) {
+            return accessToken;
         }
+
+        // 액세스 토큰 만료된 경우 리프레시 토큰으로 갱신 시도
+        return handleExpiredAccessToken(request, response);
     }
 
-    private String reissueAccessToken(Member member, RefreshToken refreshToken, HttpServletResponse response) {
-        // 새로운 토큰 발급
-        Duration accessTokenDuration = Duration.ofMillis(accessTokenExpiration);
-        String newAccessToken = jwtTokenProvider.makeToken(member, accessTokenDuration);
+    private String handleExpiredAccessToken(
+        HttpServletRequest request,
+        HttpServletResponse response
+    ) throws IOException {
+        log.debug("액세스 토큰 만료됨, 리프레시 토큰으로 갱신 시도");
 
-        // 필요한 경우에만 refreshToken도 재발급 (예: 유효기간이 절반 이하로 남은 경우)
-        long currentTimeMillis = System.currentTimeMillis();
-        if (jwtTokenProvider.getExpirationTime(refreshToken.getRefreshToken()) - currentTimeMillis < refreshTokenExpiration / 2) {
-            Duration refreshTokenDuration = Duration.ofMillis(refreshTokenExpiration);
-            String newRefreshToken = jwtTokenProvider.makeToken(member, refreshTokenDuration);
-            refreshToken.update(newRefreshToken);
-            refreshTokenRepository.save(refreshToken);
+        String refreshToken = tokenExtractor.extractRefreshToken(request);
 
-            // 쿠키에 새 refreshToken 설정
-            addTokenCookie(response, REFRESH_TOKEN_COOKIE_NAME, newRefreshToken, refreshTokenDuration.toSeconds());
+        // 리프레시 토큰 유효성 검사
+        if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
+            sendErrorResponse(response, "액세스 토큰이 만료되었고, 리프레시 토큰도 유효하지 않습니다");
+            return null;
         }
 
-        // 쿠키에 새 accessToken 설정
-        addTokenCookie(response, ACCESS_TOKEN_COOKIE_NAME, newAccessToken, accessTokenDuration.toSeconds());
+        String memberId = jwtTokenProvider.getUserIdFromToken(refreshToken);
 
-        return newAccessToken;
+        // DB에 저장된 리프레시 토큰 검증
+        RefreshToken savedRefreshToken = refreshTokenRepository.findByMemberId(Long.valueOf(memberId))
+            .orElseThrow(() -> new IllegalArgumentException("저장된 리프레시 토큰이 존재하지 않습니다."));
+
+        if (!savedRefreshToken.getRefreshToken().equals(refreshToken)) {
+            removeTokenCookies(response);
+            sendErrorResponse(response, "유효하지 않은 리프레시 토큰입니다.");
+            return null;
+        }
+
+        // 새 토큰 발급
+        Member member = memberRepository.findById(Long.valueOf(memberId))
+            .orElseThrow(() -> new IllegalArgumentException("회원 정보가 존재하지 않습니다."));
+
+        return reissueAccessToken(member, savedRefreshToken, response);
     }
 
-    private void authenticateUser(String userId, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Member member = memberRepository.findById(Long.valueOf(userId))
+    private boolean isMemberAllowedToAccess(HttpServletRequest request, String memberId) {
+        Member member = memberRepository.findById(Long.valueOf(memberId))
             .orElseThrow(() -> new IllegalArgumentException("사용자 정보가 존재하지 않습니다."));
 
-        // 등록 완료 여부 확인 및 접근 제한
-        if (!isAccessiblePath(request, member)) {
-            sendRegistrationErrorResponse(response, "가입이 완료되지 않은 사용자입니다");
-            return;
+        // 회원 등록 완료 상태라면 모든 경로 접근 가능
+        if (member.registrationCompleted()) {
+            return true;
         }
+
+        // 등록 미완료 회원은 허용된 경로만 접근 가능
+        String path = request.getServletPath();
+        return ALLOWED_UNREGISTERED_PATHS.stream()
+            .anyMatch(path::startsWith);
+    }
+
+    private void authenticateMember(String memberId) {
+        Member member = memberRepository.findById(Long.valueOf(memberId))
+            .orElseThrow(() -> new IllegalArgumentException("사용자 정보가 존재하지 않습니다."));
 
         MemberPrincipal memberPrincipal = MemberPrincipal.create(member, null);
         UsernamePasswordAuthenticationToken authentication =
@@ -155,16 +154,29 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    private boolean isAccessiblePath(HttpServletRequest request, Member member) {
-        // 회원이 등록 완료 상태라면 모든 경로 접근 가능
-        if (member.registrationCompleted()) {
-            return true;
+    private String reissueAccessToken(
+        Member member, RefreshToken refreshToken, HttpServletResponse response) {
+        // 새로운 액세스 토큰 발급
+        Duration accessTokenDuration = Duration.ofMillis(accessTokenExpiration);
+        String newAccessToken = jwtTokenProvider.makeToken(member, accessTokenDuration);
+
+        // 리프레시 토큰 재발급 (유효 기간 절반 이하 남은 경우)
+        var currentTimeMillis = System.currentTimeMillis();
+        var expirationTime = jwtTokenProvider.getExpirationTime(refreshToken.getRefreshToken());
+        if (expirationTime - currentTimeMillis < refreshTokenExpiration / 2) {
+            Duration refreshTokenDuration = Duration.ofMillis(refreshTokenExpiration);
+            String newRefreshToken = jwtTokenProvider.makeToken(member, refreshTokenDuration);
+            refreshToken.update(newRefreshToken);
+            refreshTokenRepository.save(refreshToken);
+
+            // 쿠키에 새 리프레시 토큰 설정
+            addTokenCookie(response, REFRESH_TOKEN_COOKIE_NAME, newRefreshToken, refreshTokenDuration.toSeconds());
         }
 
-        // 등록 미완료 회원은 허용된 경로만 접근 가능
-        String path = request.getServletPath();
-        return REGISTRATION_PATHS.stream()
-            .anyMatch(path::startsWith);
+        // 쿠키에 새 accessToken 설정
+        addTokenCookie(response, ACCESS_TOKEN_COOKIE_NAME, newAccessToken, accessTokenDuration.toSeconds());
+
+        return newAccessToken;
     }
 
     /**
@@ -207,11 +219,11 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         log.error("인증 실패: {}", message);
     }
 
-    private void sendRegistrationErrorResponse(HttpServletResponse response, String message) throws IOException {
+    private void sendRegistrationErrorResponse(HttpServletResponse response) throws IOException {
         response.setStatus(488);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"message\":\"" + message + "\"}");
-        log.error("가입 미완료 사용자 차단: {}", message);
+        response.getWriter().write("{\"message\":\"가입이 완료되지 않은 사용자입니다\"}");
+        log.error("가입 미완료 사용자 차단");
     }
 }

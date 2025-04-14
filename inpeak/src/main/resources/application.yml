@@ -20,7 +20,7 @@ jwt:
   refreshToken:
     expiration: ${REFRESH_EXPIRATION_TIME:1209600000}
   issuer: ${ISSUER:inpeak}
-  redirectUri: ${REDIRECT_URL:http://localhost:5173/?status=NEED_MORE_INFO}
+  redirectUri: ${REDIRECT_URL:http://localhost:5173}
 
 server:
   tomcat:
