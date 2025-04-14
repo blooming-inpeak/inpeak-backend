@@ -50,7 +50,6 @@ public class TokenExtractor {
 
     public String extractBearerToken(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");
-        System.out.println("authorizationHeaderaaaaaaaaaaa = " + authorizationHeader);
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             return authorizationHeader.substring(7);

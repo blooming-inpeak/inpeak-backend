@@ -64,7 +64,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             response, REFRESH_TOKEN_COOKIE_NAME, refreshToken, refreshTokenDuration.toSeconds()
         );
 
-        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
+        String targetUrl = redirectUrl;
+        if (!member.registrationCompleted()) {
+            targetUrl = redirectUrl + "?status=NEED_MORE_INFO";
+        }
+
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
     private void addTokenCookie(HttpServletResponse response, String name, String value, Long maxAge) {

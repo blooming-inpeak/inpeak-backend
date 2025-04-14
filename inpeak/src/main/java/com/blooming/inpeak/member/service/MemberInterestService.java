@@ -52,14 +52,7 @@ public class MemberInterestService {
     public void registerInitialInterests(Long memberId, MemberInterestRequest request) {
         Member member = getMemberById(memberId);
 
-        if (member.registrationCompleted()) {
-            throw new IllegalStateException("이미 회원 등록이 완료되었습니다: " + memberId);
-        }
-
-        // 관심사 업데이트
         updateMemberInterests(memberId, request.interestTypes());
-
-        // 초기 등록시에만 회원 상태 업데이트
         member.completeRegistration();
         memberRepository.save(member);
     }
