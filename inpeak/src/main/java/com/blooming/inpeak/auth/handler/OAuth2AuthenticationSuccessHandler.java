@@ -64,10 +64,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             response, REFRESH_TOKEN_COOKIE_NAME, refreshToken, refreshTokenDuration.toSeconds()
         );
 
-        String targetUrl = redirectUrl;
-        if (!member.registrationCompleted()) {
-            targetUrl = redirectUrl + "?status=NEED_MORE_INFO";
-        }
+        String targetUrl = member.getRedirectUrlByStatus(redirectUrl);
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }

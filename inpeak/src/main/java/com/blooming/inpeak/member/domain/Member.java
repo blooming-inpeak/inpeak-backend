@@ -106,4 +106,12 @@ public class Member extends BaseEntity {
     public void updateNickname(String nickName) {
         this.nickname = nickName;
     }
+
+    public String getRedirectUrlByStatus(String baseUrl) {
+        if (!this.registrationCompleted()) {
+            return baseUrl + "?status=NEED_MORE_INFO";
+        }
+
+        return baseUrl;
+    }
 }
