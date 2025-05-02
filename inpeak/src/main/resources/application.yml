@@ -10,8 +10,8 @@ spring:
       - openai
   servlet:
     multipart:
-      max-file-size: 50MB
-      max-request-size: 50MB
+      max-file-size: 100MB
+      max-request-size: 100MB
 
 jwt:
   secret: ${SECRET_KEY:your-secret-key-should-be-at-least-32-characters-long}
@@ -40,7 +40,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:

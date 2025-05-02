@@ -3,9 +3,11 @@ package com.blooming.inpeak.answer.repository;
 import com.blooming.inpeak.answer.domain.Answer;
 import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.answer.domain.QAnswer;
+import com.blooming.inpeak.answer.dto.response.AnswerResponse;
 import com.blooming.inpeak.interview.domain.QInterview;
 import com.blooming.inpeak.question.domain.QQuestion;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -31,7 +33,7 @@ public class AnswerRepositoryCustom {
      * @param pageable     페이징 정보
      * @return question, interview까지 페치 조인하여 전체 답변 리스트를 반환
      */
-    public Slice<Answer> findAnswers(
+    public Slice<AnswerResponse> findAnswers(
         Long memberId,
         Boolean isUnderstood,
         AnswerStatus status,
@@ -47,8 +49,16 @@ public class AnswerRepositoryCustom {
         OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortType, answer);
 
         // QueryDSL 실행
-        List<Answer> results = queryFactory
-            .selectFrom(answer)
+        List<AnswerResponse> results = queryFactory
+            .select(Projections.constructor(AnswerResponse.class,
+                answer.id,
+                interview.startDate,       // interview → 직접 조회
+                question.content,          // question → 직접 조회
+                answer.runningTime,
+                answer.status,
+                answer.isUnderstood
+            ))
+            .from(answer)
             .leftJoin(question).on(answer.questionId.eq(question.id)).fetchJoin()
             .leftJoin(interview).on(answer.interviewId.eq(interview.id)).fetchJoin()
             .where(filter)
@@ -85,7 +95,7 @@ public class AnswerRepositoryCustom {
     }
 
     // slice 리턴 형식을 맞추기 위한 메서드
-    private Slice<Answer> toSlice(List<Answer> results, Pageable pageable) {
+    private Slice<AnswerResponse> toSlice(List<AnswerResponse> results, Pageable pageable) {
         boolean hasNext = results.size() > pageable.getPageSize();
         if (hasNext) {
             results.remove(results.size() - 1); // 추가로 가져온 항목 제거

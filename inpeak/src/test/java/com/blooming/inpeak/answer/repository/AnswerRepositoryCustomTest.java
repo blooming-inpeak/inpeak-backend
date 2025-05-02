@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import com.blooming.inpeak.answer.domain.Answer;
 import com.blooming.inpeak.answer.domain.AnswerStatus;
+import com.blooming.inpeak.answer.dto.response.AnswerResponse;
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.member.domain.OAuth2Provider;
 import com.blooming.inpeak.member.domain.RegistrationStatus;
@@ -96,13 +97,13 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
+        Slice<AnswerResponse> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
             AnswerStatus.CORRECT, "DESC", pageable);
 
         // then
         assertThat(results).isNotNull();
         assertThat(results.getNumberOfElements()).isEqualTo(2);
-        assertThat(results.getContent()).allMatch(a -> a.getStatus() == AnswerStatus.CORRECT);
+        assertThat(results.getContent()).allMatch(a -> a.answerStatus() == AnswerStatus.CORRECT);
     }
 
     @Test
@@ -112,14 +113,14 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
+        Slice<AnswerResponse> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
             AnswerStatus.ALL, "DESC", pageable);
 
         // then
         assertThat(results).isNotNull();
         assertThat(results.getNumberOfElements()).isEqualTo(2);
         assertThat(results.getContent())
-            .extracting(Answer::getStatus)
+            .extracting(AnswerResponse::answerStatus)
             .containsOnly(AnswerStatus.INCORRECT, AnswerStatus.SKIPPED);
     }
 
@@ -130,13 +131,13 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), true,
+        Slice<AnswerResponse> results = answerRepositoryCustom.findAnswers(testMember.getId(), true,
             AnswerStatus.CORRECT, "DESC", pageable);
 
         // then
         assertThat(results).isNotNull();
         assertThat(results.getNumberOfElements()).isEqualTo(1);
-        assertThat(results.getContent()).allMatch(Answer::isUnderstood);
+        assertThat(results.getContent()).allMatch(AnswerResponse::isUnderstood);
     }
 
     @Test
@@ -146,7 +147,7 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 1);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
+        Slice<AnswerResponse> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
             AnswerStatus.ALL, "DESC", pageable);
 
         // then
@@ -162,12 +163,12 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
+        Slice<AnswerResponse> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
             AnswerStatus.ALL, "DESC", pageable);
 
         // then
         assertThat(results).isNotNull();
-        assertThat(results.getContent()).isSortedAccordingTo(Comparator.comparing(Answer::getCreatedAt).reversed());
+        assertThat(results.getContent()).isSortedAccordingTo(Comparator.comparing(AnswerResponse::dateTime).reversed());
     }
 
     @Test
@@ -177,12 +178,12 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
+        Slice<AnswerResponse> results = answerRepositoryCustom.findAnswers(testMember.getId(), null,
             AnswerStatus.ALL, "ASC", pageable);
 
         // then
         assertThat(results).isNotNull();
-        assertThat(results.getContent()).isSortedAccordingTo(Comparator.comparing(Answer::getCreatedAt));
+        assertThat(results.getContent()).isSortedAccordingTo(Comparator.comparing(AnswerResponse::dateTime));
     }
 
     @Test
@@ -275,14 +276,14 @@ class AnswerRepositoryCustomTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(testMember.getId(), false,
+        Slice<AnswerResponse> results = answerRepositoryCustom.findAnswers(testMember.getId(), false,
             AnswerStatus.CORRECT, "DESC", pageable);
 
         // then
         assertThat(results).isNotNull();
         assertThat(results.getNumberOfElements()).isEqualTo(1); // 이해하지 못한 정답은 1개
         assertThat(results.getContent()).allMatch(answer ->
-            !answer.isUnderstood() && answer.getStatus() == AnswerStatus.CORRECT);
+            !answer.isUnderstood() && answer.answerStatus() == AnswerStatus.CORRECT);
     }
 
 }

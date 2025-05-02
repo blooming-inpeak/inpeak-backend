@@ -74,7 +74,7 @@ public class AnswerService {
         Pageable pageable = PageRequest.of(command.page(), command.size());
 
         // 공통된 로직: 답변 리스트 가져오기
-        Slice<Answer> results = answerRepositoryCustom.findAnswers(
+        Slice<AnswerResponse> results = answerRepositoryCustom.findAnswers(
             command.memberId(),
             command.isUnderstood(),
             command.status(),
@@ -82,12 +82,7 @@ public class AnswerService {
             pageable
         );
 
-        // 공통된 로직: DTO 변환
-        List<AnswerResponse> answerResponses = results.getContent().stream()
-            .map(AnswerResponse::from)
-            .toList();
-
-        return new AnswerListResponse(answerResponses, results.hasNext());
+        return new AnswerListResponse(results.getContent(), results.hasNext());
     }
 
     /**
