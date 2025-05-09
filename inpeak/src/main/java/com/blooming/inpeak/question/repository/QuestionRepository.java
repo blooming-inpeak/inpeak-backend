@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     @Query(value = """
-        SELECT q.*
+        SELECT DISTINCT q.*
         FROM questions q
         LEFT JOIN answers a ON q.id = a.question_id AND a.member_id = :memberId
         WHERE q.type IN (:types)

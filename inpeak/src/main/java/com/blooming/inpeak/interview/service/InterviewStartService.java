@@ -1,5 +1,7 @@
 package com.blooming.inpeak.interview.service;
 
+import com.blooming.inpeak.common.error.exception.BadRequestException;
+import com.blooming.inpeak.common.error.exception.NotFoundException;
 import com.blooming.inpeak.interview.dto.response.InterviewStartResponse;
 import com.blooming.inpeak.member.domain.InterestType;
 import com.blooming.inpeak.member.service.MemberInterestService;
@@ -24,7 +26,7 @@ public class InterviewStartService {
         // 남은 모의면접 횟수 확인
         int interviewCount = interviewService.getRemainingInterviews(memberId, startDate).count();
         if (interviewCount == 0) {
-            throw new RuntimeException("남은 모의면접 횟수가 없습니다.");
+            throw new BadRequestException("모의면접 횟수가 모두 소진되었습니다.");
         }
 
         // 인터뷰 생성
@@ -32,6 +34,10 @@ public class InterviewStartService {
 
         // 사용자의 관심사를 가져와 질문을 필터링
         List<InterestType> interestTypes = memberInterestService.getMemberInterestTypes(memberId);
+        if (interestTypes.isEmpty()) {
+            throw new NotFoundException("관심사가 선택되지 않았습니다.");
+        }
+
         List<QuestionResponse> questionResponse = questionService.getFilteredQuestions(memberId, interestTypes);
 
         return InterviewStartResponse.of(interviewId, questionResponse);
