@@ -3,6 +3,7 @@ package com.blooming.inpeak.interview.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.blooming.inpeak.common.error.exception.BadRequestException;
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.interview.dto.response.InterviewStartResponse;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
@@ -75,7 +76,7 @@ class InterviewStartServiceTest extends IntegrationTestSupport {
         // when & then
         assertThatThrownBy(() ->
             interviewStartService.startInterview(MEMBER_ID, TODAY)
-        ).isInstanceOf(RuntimeException.class)
-            .hasMessageContaining("남은 모의면접 횟수가 없습니다.");
+        ).isInstanceOf(BadRequestException.class)
+            .hasMessageContaining("모의면접 횟수가 모두 소진되었습니다.");
     }
 }
