@@ -116,13 +116,14 @@ public class Answer extends BaseEntity {
         String userAnswer = texts[0];
         AnswerStatus status = AnswerStatus.valueOf(texts[1]);
         String AIAnswer = texts[2];
+        String trimmedVideoURL = removeQueryParams(command.videoURL());
 
         return Answer.builder()
             .questionId(command.questionId())
             .memberId(command.memberId())
             .interviewId(command.interviewId())
             .userAnswer(userAnswer)
-            .videoURL(command.videoURL())
+            .videoURL(trimmedVideoURL)
             .runningTime(command.time())
             .isUnderstood(false)
             .status(status)
@@ -134,6 +135,11 @@ public class Answer extends BaseEntity {
         return Arrays.stream(feedback.split("@"))
             .map(String::trim) // 각 문자열에 trim 적용
             .toArray(String[]::new);
+    }
+
+    private static String removeQueryParams(String url) {
+        if (url == null) return null;
+        return url.split("\\?")[0];
     }
 
     /**

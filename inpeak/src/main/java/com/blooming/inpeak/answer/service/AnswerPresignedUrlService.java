@@ -1,6 +1,7 @@
 package com.blooming.inpeak.answer.service;
 
 import com.blooming.inpeak.answer.dto.response.AnswerPresignedUrlResponse;
+import com.blooming.inpeak.common.error.exception.BadRequestException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -79,7 +80,7 @@ public class AnswerPresignedUrlService {
     private String generateObjectKey(Long memberId, LocalDate startDate, String extension) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd");
         String dateString = startDate.format(formatter);
-        String uuid = UUID.randomUUID().toString();
+        String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
         return String.format("videos/%d/%s/%s.%s", memberId, dateString, uuid, extension);
     }
 
@@ -93,7 +94,7 @@ public class AnswerPresignedUrlService {
         String lowerExt = extension.toLowerCase();
 
         if (!EXT_TO_CONTENT_TYPE.containsKey(lowerExt)) {
-            throw new RuntimeException("지원하지 않는 파일 형식입니다.");
+            throw new BadRequestException("지원하지 않는 파일 형식입니다.");
         }
 
         return EXT_TO_CONTENT_TYPE.getOrDefault(lowerExt, "application/octet-stream");
