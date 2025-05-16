@@ -3,7 +3,6 @@ package com.blooming.inpeak.answer.controller;
 import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
 import com.blooming.inpeak.answer.dto.request.AnswerCreateRequest;
-import com.blooming.inpeak.answer.dto.request.AnswerCreateRequest2;
 import com.blooming.inpeak.answer.dto.request.AnswerSkipRequest;
 import com.blooming.inpeak.answer.dto.request.CommentUpdateRequest;
 import com.blooming.inpeak.answer.dto.request.CorrectAnswerFilterRequest;
@@ -100,16 +99,6 @@ public class AnswerController {
         @RequestBody AnswerCreateRequest answerCreateRequest
     ) {
         AnswerIDResponse response = answerService.createAnswer(
-            answerCreateRequest.toCommand(memberPrincipal.id()));
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/create/v2")
-    public ResponseEntity<AnswerIDResponse> createAnswer2(
-        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
-        @RequestBody AnswerCreateRequest2 answerCreateRequest
-    ) {
-        AnswerIDResponse response = answerService.createAnswer2(
             answerCreateRequest.toCommand(memberPrincipal.id()));
         return ResponseEntity.ok(response);
     }
