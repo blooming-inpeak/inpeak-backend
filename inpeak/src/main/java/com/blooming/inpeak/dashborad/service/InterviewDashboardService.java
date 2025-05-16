@@ -22,22 +22,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class InterviewDashboardService {
 
-    private static final Duration DASHBOARD_TTL = Duration.ofSeconds(60); // TTL 설정
-
     private final InterviewService interviewService;
     private final AnswerService answerService;
     private final SuccessRateService successRateService;
-    private final RedisTemplate<String, InterviewDashboardResponse> interviewDashboardRedisTemplate;
 
 
     public InterviewDashboardResponse getDashboard(Long memberId, LocalDate startDate) {
-        String key = getRedisKey(memberId);
-
-        // Redis 캐시 먼저 조회
-        InterviewDashboardResponse cached = interviewDashboardRedisTemplate.opsForValue().get(key);
-        if (cached != null) return cached;
-
-        // 원래 로직 수행
         RemainingInterviewsResponse remainingInterviews =
             interviewService.getRemainingInterviews(memberId, startDate);
 
@@ -47,16 +37,7 @@ public class InterviewDashboardService {
 
         SuccessRateResponse successRate = successRateService.getSuccessRate(memberId);
 
-        InterviewDashboardResponse result = InterviewDashboardResponse.of(
+        return InterviewDashboardResponse.of(
             remainingInterviews, successRate, levelInfo, recentAnswers);
-
-        // Redis 캐시에 저장
-        interviewDashboardRedisTemplate.opsForValue().set(key, result, DASHBOARD_TTL);
-
-        return result;
-    }
-
-    private String getRedisKey(Long memberId) {
-        return "dashboard:" + memberId;
     }
 }

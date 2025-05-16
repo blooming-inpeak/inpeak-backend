@@ -36,15 +36,4 @@ public class RedisConfiguration {
 
         return template;
     }
-
-    @Bean
-    public RedisTemplate<String, InterviewDashboardResponse> interviewDashboardRedisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<String, InterviewDashboardResponse> template = new RedisTemplate<>();
-        template.setConnectionFactory(factory);
-
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer()); // JSON 직렬화
-
-        return template;
-    }
 }
