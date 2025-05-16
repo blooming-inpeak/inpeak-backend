@@ -3,6 +3,7 @@ package com.blooming.inpeak.answer.service;
 import com.blooming.inpeak.answer.domain.Answer;
 import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.answer.dto.command.AnswerCreateCommand;
+import com.blooming.inpeak.answer.dto.command.AnswerCreateCommand2;
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
 import com.blooming.inpeak.answer.dto.response.AnswerDetailResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerIDResponse;
@@ -142,6 +143,29 @@ public class AnswerService {
             .orElseThrow(() -> new NotFoundException("해당 질문이 존재하지 않습니다."));
 
         String feedback = gptService.makeGPTResponse(command.audioFile(), question.getContent());
+
+        Answer answer = Answer.of(command, feedback);
+        answerRepository.save(answer);
+
+        return new AnswerIDResponse(answer.getId());
+    }
+
+    /**
+     * 답변을 생성하는 메서드
+     *
+     * @param command 답변 생성 명령
+     */
+    @Transactional
+    public AnswerIDResponse createAnswer2(AnswerCreateCommand2 command) {
+        if (answerRepository.existsByInterviewIdAndQuestionId(command.interviewId(),
+            command.questionId())) {
+            throw new ConflictException("이미 답변이 존재하는 질문입니다.");
+        }
+
+        Question question = questionRepository.findById(command.questionId())
+            .orElseThrow(() -> new NotFoundException("해당 질문이 존재하지 않습니다."));
+
+        String feedback = gptService.makeGPTResponse2(command.userAnswer(), question.getContent());
 
         Answer answer = Answer.of(command, feedback);
         answerRepository.save(answer);

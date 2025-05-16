@@ -1,6 +1,7 @@
 package com.blooming.inpeak.answer.domain;
 
 import com.blooming.inpeak.answer.dto.command.AnswerCreateCommand;
+import com.blooming.inpeak.answer.dto.command.AnswerCreateCommand2;
 import com.blooming.inpeak.common.base.BaseEntity;
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.question.domain.Question;
@@ -123,6 +124,33 @@ public class Answer extends BaseEntity {
             .memberId(command.memberId())
             .interviewId(command.interviewId())
             .userAnswer(userAnswer)
+            .videoURL(trimmedVideoURL)
+            .runningTime(command.time())
+            .isUnderstood(false)
+            .status(status)
+            .AIAnswer(AIAnswer)
+            .build();
+    }
+
+    /**
+     * 사용자가 제출한 답변을 저장하는 메서드
+     *
+     * @param command 답변 생성 명령
+     * @param feedback GPT로부터 받은 피드백
+     * @return Answer 객체
+     */
+    public static Answer of(AnswerCreateCommand2 command, String feedback) {
+        String[] texts = splitAndTrimText(feedback);
+
+        AnswerStatus status = AnswerStatus.valueOf(texts[0]);
+        String AIAnswer = texts[1];
+        String trimmedVideoURL = removeQueryParams(command.videoURL());
+
+        return Answer.builder()
+            .questionId(command.questionId())
+            .memberId(command.memberId())
+            .interviewId(command.interviewId())
+            .userAnswer(command.userAnswer())
             .videoURL(trimmedVideoURL)
             .runningTime(command.time())
             .isUnderstood(false)
