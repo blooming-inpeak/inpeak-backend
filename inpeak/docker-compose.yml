@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "18080:8080"
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/inpeak-db
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=secret
+      - SPRING_REDIS_HOST=redis
+      - SECRET_KEY=your-secret-key-should-be-at-least-32-characters-long
+      - REDIRECT_URL=http://localhost:5173
+    networks:
+      - inpeak-net
+
+  mysql:
+    image: mysql:8.0.36
+    environment:
+      - MYSQL_DATABASE=inpeak-db
+      - MYSQL_USER=myuser
+      - MYSQL_PASSWORD=secret
+      - MYSQL_ROOT_PASSWORD=verysecret
+    ports:
+      - "13306:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    networks:
+      - inpeak-net
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.2
+    ports:
+      - "16379:6379"
+    networks:
+      - inpeak-net
+
+networks:
+  inpeak-net:

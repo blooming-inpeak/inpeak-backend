@@ -59,17 +59,27 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         HttpServletResponse response,
         FilterChain filterChain
     ) throws IOException, ServletException {
-        String accessToken = extractAndValidateAccessToken(request, response);
-        if (accessToken == null) return;
+        try {
+            String accessToken = extractAndValidateAccessToken(request, response);
+            if (accessToken == null) return;
 
-        String memberId = jwtTokenProvider.getUserIdFromToken(accessToken);
-        if (!isMemberAllowedToAccess(request, memberId)) {
-            sendRegistrationErrorResponse(response);
-            return;
+            String memberId = jwtTokenProvider.getUserIdFromToken(accessToken);
+            if (!isMemberAllowedToAccess(request, memberId)) {
+                sendRegistrationErrorResponse(response);
+                return;
+            }
+
+            authenticateMember(memberId);
+            filterChain.doFilter(request, response);
+
+        } catch (IllegalArgumentException e) {
+            // 사용자 정보 없음, 토큰 유효성 등 커스텀 예외 처리
+            sendErrorResponse(response, e.getMessage());
+        } catch (Exception e) {
+            // 기타 예상치 못한 예외 (로그만 남기고 일반적인 메시지 반환)
+            log.error("인증 필터 처리 중 예외 발생", e);
+            sendErrorResponse(response, "인증 처리 중 문제가 발생했습니다.");
         }
-
-        authenticateMember(memberId);
-        filterChain.doFilter(request, response);
     }
 
     private String extractAndValidateAccessToken(

@@ -88,3 +88,7 @@ tasks.withType(JavaCompile).configureEach {
 clean.doLast {
     delete querydslDir
 }
+
+bootJar {
+    archiveFileName = 'inpeak-backend.jar'
+}
