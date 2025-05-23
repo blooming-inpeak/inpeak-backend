@@ -15,6 +15,7 @@ import com.blooming.inpeak.answer.dto.response.UserStatsResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
 import com.blooming.inpeak.common.error.exception.ConflictException;
+import com.blooming.inpeak.common.error.exception.EncodingException;
 import com.blooming.inpeak.common.error.exception.ForbiddenException;
 import com.blooming.inpeak.common.error.exception.NotFoundException;
 import com.blooming.inpeak.interview.domain.Interview;
@@ -22,7 +23,9 @@ import com.blooming.inpeak.answer.dto.response.MemberLevelResponse;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
 import com.blooming.inpeak.question.domain.Question;
 import com.blooming.inpeak.question.repository.QuestionRepository;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +33,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -148,6 +152,15 @@ public class AnswerService {
 
         return new AnswerIDResponse(answer.getId());
     }
+
+    private String encodeToBase64(MultipartFile file) {
+        try {
+            return Base64.getEncoder().encodeToString(file.getBytes());
+        } catch (IOException e) {
+            throw new EncodingException("파일 인코딩 실패");
+        }
+    }
+
     /**
      * 답변의 상태를 업데이트하는 메서드
      *

@@ -72,4 +72,11 @@ public class ErrorHandlingController {
         log.error("요청 충돌: {}", e.getMessage());
         return buildError(ErrorCode.CONFLICT);
     }
+
+    @ExceptionHandler(EncodingException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    protected ErrorResponse handleEncodingException(EncodingException e) {
+        log.error("오디오 파일 인코딩 중 오류 발생: {}", e.getMessage());
+        return buildError(ErrorCode.ENCODING_FAILED); // 혹은 적절한 에러 코드
+    }
 }

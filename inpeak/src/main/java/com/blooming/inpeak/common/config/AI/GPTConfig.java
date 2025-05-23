@@ -24,4 +24,9 @@ public class GPTConfig {
         return template;
 
     }
+
+    @Bean("whisperRestTemplate")
+    public RestTemplate whisperRestTemplate() {
+        return new RestTemplate(); // 헤더 인터셉터 없는 깨끗한 RestTemplate
+    }
 }

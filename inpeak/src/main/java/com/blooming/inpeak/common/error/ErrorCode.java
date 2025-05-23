@@ -18,7 +18,10 @@ public enum ErrorCode {
     NOT_FOUND("NOT_FOUND", "요청한 리소스를 찾을 수 없습니다.", 404),
 
     // 409 Conflict
-    CONFLICT("CONFLICT", "요청이 서버 상태와 충돌했습니다.", 409);
+    CONFLICT("CONFLICT", "요청이 서버 상태와 충돌했습니다.", 409),
+
+    // 500 Internal Server Error
+    ENCODING_FAILED("ENCODING_FAILED", "인코딩에 실패했습니다.", 500);
 
     private final String code;
     private final String message;

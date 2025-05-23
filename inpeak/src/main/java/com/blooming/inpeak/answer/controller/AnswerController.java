@@ -1,8 +1,8 @@
 package com.blooming.inpeak.answer.controller;
 
 import com.blooming.inpeak.answer.domain.AnswerStatus;
+import com.blooming.inpeak.answer.dto.command.AnswerCreateCommand;
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
-import com.blooming.inpeak.answer.dto.request.AnswerCreateRequest;
 import com.blooming.inpeak.answer.dto.request.AnswerSkipRequest;
 import com.blooming.inpeak.answer.dto.request.CommentUpdateRequest;
 import com.blooming.inpeak.answer.dto.request.CorrectAnswerFilterRequest;
@@ -20,6 +20,7 @@ import com.blooming.inpeak.answer.service.AnswerService;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +30,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/answer")
@@ -93,13 +96,19 @@ public class AnswerController {
             answerPresignedUrlService.getPreSignedUrl(memberPrincipal.id(), startDate, extension));
     }
 
-    @PostMapping("/create")
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AnswerIDResponse> createAnswer(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
-        @RequestBody AnswerCreateRequest answerCreateRequest
+        @RequestParam("audioFile") MultipartFile audioFile,
+        @RequestParam("time") Long time,
+        @RequestParam("questionId") Long questionId,
+        @RequestParam("interviewId") Long interviewId,
+        @RequestParam(value = "videoURL", required = false) String videoURL
     ) {
         AnswerIDResponse response = answerService.createAnswer(
-            answerCreateRequest.toCommand(memberPrincipal.id()));
+            AnswerCreateCommand.of(audioFile, time, memberPrincipal.id(),
+                questionId, interviewId, videoURL));
+
         return ResponseEntity.ok(response);
     }
 
