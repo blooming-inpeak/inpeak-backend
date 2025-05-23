@@ -85,7 +85,7 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
     /**
      * 특정 멤버의 모든 비디오 URL 조회
      */
-    @Query(value = "SELECT video_url FROM answer WHERE member_id = :memberId", nativeQuery = true)
+    @Query(value = "SELECT video_url FROM answers WHERE member_id = :memberId", nativeQuery = true)
     List<String> findAllVideoUrlsByMemberId(@Param("memberId") Long memberId);
 
     Optional<Answer> findByInterviewIdAndQuestionId(Long interviewId, Long questionId);
