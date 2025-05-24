@@ -70,7 +70,7 @@ CREATE TABLE answers (
                          member_id BIGINT NOT NULL,
                          interview_id BIGINT NOT NULL,
                          user_answer TEXT,
-                         video_url TEXT,
+                         video_url VARCHAR(255),
                          running_time BIGINT,
                          comment TEXT,
                          is_understood BOOLEAN NOT NULL DEFAULT FALSE,
@@ -90,6 +90,18 @@ CREATE TABLE refreshtokens (
                                created_at TIMESTAMP NOT NULL,
                                updated_at TIMESTAMP NOT NULL,
                                FOREIGN KEY (member_id) REFERENCES members(id)
+);
+
+CREATE TABLE member_statistics (
+                                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                    member_id BIGINT NOT NULL UNIQUE,
+                                    correct_count INT NOT NULL DEFAULT 0,
+                                    incorrect_count INT NOT NULL DEFAULT 0,
+                                    skipped_count INT NOT NULL DEFAULT 0,
+                                    total_count INT GENERATED ALWAYS AS (correct_count + incorrect_count + skipped_count) STORED,
+                                    created_at TIMESTAMP NOT NULL,
+                                    updated_at TIMESTAMP NOT NULL,
+                                    FOREIGN KEY (member_id) REFERENCES members(id)
 );
 
 -- 트랜잭션 완료

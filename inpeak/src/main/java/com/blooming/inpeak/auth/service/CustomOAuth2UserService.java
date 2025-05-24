@@ -2,10 +2,12 @@ package com.blooming.inpeak.auth.service;
 
 import com.blooming.inpeak.common.utils.NicknameGenerator;
 import com.blooming.inpeak.member.domain.Member;
+import com.blooming.inpeak.member.domain.MemberStatistics;
 import com.blooming.inpeak.member.domain.OAuth2Provider;
 import com.blooming.inpeak.member.domain.RegistrationStatus;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
 import com.blooming.inpeak.member.repository.MemberRepository;
+import com.blooming.inpeak.member.repository.MemberStatisticsRepository;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -21,6 +23,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final MemberRepository memberRepository;
     private final NicknameGenerator nicknameGenerator;
+    private final MemberStatisticsRepository memberStatisticsRepository;
 
     // 테스트를 위해 DefaultOAuth2UserService를 필드로 추가
     private final DefaultOAuth2UserService defaultOAuth2UserService = new DefaultOAuth2UserService();
@@ -64,6 +67,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             .kakaoEmail(kakaoEmail)
             .build();
 
-        return memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
+        memberStatisticsRepository.save(MemberStatistics.of(savedMember.getId()));
+
+        return savedMember;
     }
 }
