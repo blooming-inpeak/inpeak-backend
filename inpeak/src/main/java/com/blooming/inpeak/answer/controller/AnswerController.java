@@ -14,7 +14,6 @@ import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerPresignedUrlResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
 import com.blooming.inpeak.answer.dto.response.RecentAnswerListResponse;
-import com.blooming.inpeak.answer.dto.response.UserStatsResponse;
 import com.blooming.inpeak.answer.service.AnswerPresignedUrlService;
 import com.blooming.inpeak.answer.service.AnswerService;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
@@ -30,7 +29,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -127,14 +125,6 @@ public class AnswerController {
     ) {
         answerService.updateComment(request.answerId(), request.comment());
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/summary")
-    public ResponseEntity<UserStatsResponse> getSummary(
-        @AuthenticationPrincipal MemberPrincipal memberPrincipal
-    ) {
-        UserStatsResponse response = answerService.getUserStats(memberPrincipal.id());
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping

@@ -1,4 +1,4 @@
-package com.blooming.inpeak.dashborad.dto;
+package com.blooming.inpeak.member.dto.response;
 
 import lombok.Builder;
 

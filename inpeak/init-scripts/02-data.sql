@@ -106,6 +106,29 @@ VALUES
 SELECT CONCAT('리프레시 토큰 데이터: ', COUNT(*), '개 행') AS message FROM refreshtokens;
 
 -- -------------------------------
+-- 7. 통계 데이터
+-- -------------------------------
+INSERT INTO member_statistics (
+    member_id,
+    correct_count,
+    incorrect_count,
+    skipped_count,
+    created_at,
+    updated_at
+)
+SELECT
+    a.member_id,
+    SUM(CASE WHEN a.status = 'CORRECT' THEN 1 ELSE 0 END) AS correct_count,
+    SUM(CASE WHEN a.status = 'INCORRECT' THEN 1 ELSE 0 END) AS incorrect_count,
+    SUM(CASE WHEN a.status = 'SKIPPED' THEN 1 ELSE 0 END) AS skipped_count,
+    NOW(),
+    NOW()
+FROM answers a
+GROUP BY a.member_id;
+
+SELECT CONCAT('통계 데이터: ', COUNT(*), '개 행') AS message FROM member_statistics;
+
+-- -------------------------------
 -- 마무리 작업
 -- -------------------------------
 -- 트랜잭션 완료

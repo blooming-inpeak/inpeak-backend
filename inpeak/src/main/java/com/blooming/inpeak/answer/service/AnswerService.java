@@ -11,7 +11,6 @@ import com.blooming.inpeak.answer.dto.response.AnswerResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
 import com.blooming.inpeak.answer.dto.response.RecentAnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.RecentAnswerResponse;
-import com.blooming.inpeak.answer.dto.response.UserStatsResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
 import com.blooming.inpeak.common.error.exception.ConflictException;
@@ -19,8 +18,8 @@ import com.blooming.inpeak.common.error.exception.EncodingException;
 import com.blooming.inpeak.common.error.exception.ForbiddenException;
 import com.blooming.inpeak.common.error.exception.NotFoundException;
 import com.blooming.inpeak.interview.domain.Interview;
-import com.blooming.inpeak.answer.dto.response.MemberLevelResponse;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
+import com.blooming.inpeak.member.service.MemberStatisticsService;
 import com.blooming.inpeak.question.domain.Question;
 import com.blooming.inpeak.question.repository.QuestionRepository;
 import java.io.IOException;
@@ -45,9 +44,7 @@ public class AnswerService {
     private final GPTService gptService;
     private final QuestionRepository questionRepository;
     private final InterviewRepository interviewRepository;
-
-    private static final int[] LEVEL_EXP_TABLE = {0, 30, 90, 180, 300, 450, 630, 840, 1080, 1350};
-    private static final int MAX_LEVEL = LEVEL_EXP_TABLE.length;
+    private final MemberStatisticsService memberStatisticsService;
 
     /**
      * 답변을 스킵하는 메서드
@@ -150,6 +147,9 @@ public class AnswerService {
         Answer answer = Answer.of(command, feedback);
         answerRepository.save(answer);
 
+        // 회원 통계 업데이트
+        memberStatisticsService.updateStatistics(command.memberId(), answer.getStatus());
+
         return new AnswerIDResponse(answer.getId());
     }
 
@@ -197,16 +197,6 @@ public class AnswerService {
     }
 
     /**
-     * 사용자의 답변 통계를 조회하는 메서드
-     *
-     * @param memberId 사용자 ID
-     * @return 사용자의 답변 통계
-     */
-    public UserStatsResponse getUserStats(Long memberId) {
-        return answerRepository.getUserStats(memberId);
-    }
-
-    /**
      * 특정 질문에 대한 답변을 조회하는 메서드
      *
      * @param interviewId 인터뷰 ID
@@ -241,42 +231,5 @@ public class AnswerService {
         }
 
         return AnswerDetailResponse.from(answer);
-    }
-
-    /**
-     * 회원의 레벨 정보를 가져오는 메서드
-     *
-     * @param memberId 사용자 ID
-     * @return 회원의 레벨 정보
-     */
-    public MemberLevelResponse getMemberLevel(Long memberId) {
-        UserStatsResponse stats = answerRepository.getUserStats(memberId);
-
-        int exp = calculateExp(stats.correctAnswerCount().intValue(),
-            stats.incorrectAnswerCount().intValue());
-        int level = calculateLevel(exp);
-
-        if (level == 0) return MemberLevelResponse.of(0, 0, 0);
-
-        int currentExp = exp - LEVEL_EXP_TABLE[level - 1];
-        int nextExp = (level == MAX_LEVEL) ?
-            0 : LEVEL_EXP_TABLE[level] - LEVEL_EXP_TABLE[level - 1];
-
-        return MemberLevelResponse.of(level, currentExp, nextExp);
-    }
-
-    private int calculateExp(int correct, int incorrect) {
-        return
-            correct * AnswerStatus.CORRECT.getExpPoints()
-                + incorrect * AnswerStatus.INCORRECT.getExpPoints();
-    }
-
-    private int calculateLevel(int exp) {
-        if (exp == 0) return 0;
-
-        double val = (1 + Math.sqrt(1 + (4.0 * exp / 15.0))) / 2.0;
-        int level = (int) Math.floor(val);
-
-        return Math.min(level, MAX_LEVEL);
     }
 }

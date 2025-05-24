@@ -9,6 +9,7 @@ import com.blooming.inpeak.member.domain.Member;
 import com.blooming.inpeak.member.domain.OAuth2Provider;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
 import com.blooming.inpeak.member.repository.MemberRepository;
+import com.blooming.inpeak.member.repository.MemberStatisticsRepository;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -45,6 +46,9 @@ class CustomOAuth2UserServiceTest {
     @Mock
     private DefaultOAuth2UserService defaultOAuth2UserService;
 
+    @Mock
+    private MemberStatisticsRepository memberStatisticsRepository;
+
     private CustomOAuth2UserService customOAuth2UserService;
 
     @BeforeEach
@@ -52,7 +56,8 @@ class CustomOAuth2UserServiceTest {
         // CustomOAuth2UserService 생성 및 defaultOAuth2UserService 주입
         customOAuth2UserService = new CustomOAuth2UserService(
             memberRepository,
-            nicknameGenerator
+            nicknameGenerator,
+            memberStatisticsRepository
         );
 
         // ReflectionTestUtils를 사용하여 부모 클래스의 모킹된 서비스를 주입

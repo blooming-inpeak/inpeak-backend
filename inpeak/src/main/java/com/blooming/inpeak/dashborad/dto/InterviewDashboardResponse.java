@@ -1,8 +1,9 @@
 package com.blooming.inpeak.dashborad.dto;
 
-import com.blooming.inpeak.answer.dto.response.MemberLevelResponse;
+import com.blooming.inpeak.member.dto.response.MemberLevelResponse;
 import com.blooming.inpeak.answer.dto.response.RecentAnswerResponse;
 import com.blooming.inpeak.interview.dto.response.RemainingInterviewsResponse;
+import com.blooming.inpeak.member.dto.response.SuccessRateResponse;
 import java.util.List;
 import lombok.Builder;
 
