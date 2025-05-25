@@ -1,10 +1,10 @@
-package com.blooming.inpeak.dashborad.service;
+package com.blooming.inpeak.dashboard.service;
 
 import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.member.dto.response.MemberLevelResponse;
 import com.blooming.inpeak.answer.dto.response.RecentAnswerResponse;
 import com.blooming.inpeak.answer.service.AnswerService;
-import com.blooming.inpeak.dashborad.dto.InterviewDashboardResponse;
+import com.blooming.inpeak.dashboard.dto.InterviewDashboardResponse;
 import com.blooming.inpeak.member.dto.response.SuccessRateResponse;
 import com.blooming.inpeak.interview.dto.response.RemainingInterviewsResponse;
 import com.blooming.inpeak.interview.service.InterviewService;

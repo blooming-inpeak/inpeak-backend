@@ -1,7 +1,7 @@
-package com.blooming.inpeak.dashborad.controller;
+package com.blooming.inpeak.dashboard.controller;
 
-import com.blooming.inpeak.dashborad.dto.InterviewDashboardResponse;
-import com.blooming.inpeak.dashborad.service.InterviewDashboardService;
+import com.blooming.inpeak.dashboard.dto.InterviewDashboardResponse;
+import com.blooming.inpeak.dashboard.service.InterviewDashboardService;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;

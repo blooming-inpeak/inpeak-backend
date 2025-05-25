@@ -51,8 +51,7 @@ CREATE TABLE questions (
 CREATE TABLE member_interests (
                                   id BIGINT PRIMARY KEY AUTO_INCREMENT,
                                   member_id BIGINT NOT NULL,
-                                  interest_type VARCHAR(50) NOT NULL,
-                                  FOREIGN KEY (member_id) REFERENCES members(id)
+                                  interest_type VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE interviews (
@@ -60,8 +59,7 @@ CREATE TABLE interviews (
                             member_id BIGINT NOT NULL,
                             start_date DATE NOT NULL,
                             created_at TIMESTAMP NOT NULL,
-                            updated_at TIMESTAMP NOT NULL,
-                            FOREIGN KEY (member_id) REFERENCES members(id)
+                            updated_at TIMESTAMP NOT NULL
 );
 
 CREATE TABLE answers (
@@ -77,10 +75,7 @@ CREATE TABLE answers (
                          aianswer TEXT,
                          status VARCHAR(50) NOT NULL,
                          created_at TIMESTAMP NOT NULL,
-                         updated_at TIMESTAMP NOT NULL,
-                         FOREIGN KEY (question_id) REFERENCES questions(id),
-                         FOREIGN KEY (member_id) REFERENCES members(id),
-                         FOREIGN KEY (interview_id) REFERENCES interviews(id)
+                         updated_at TIMESTAMP NOT NULL
 );
 
 CREATE TABLE refreshtokens (
@@ -88,8 +83,7 @@ CREATE TABLE refreshtokens (
                                member_id BIGINT NOT NULL,
                                refresh_token VARCHAR(255) NOT NULL,
                                created_at TIMESTAMP NOT NULL,
-                               updated_at TIMESTAMP NOT NULL,
-                               FOREIGN KEY (member_id) REFERENCES members(id)
+                               updated_at TIMESTAMP NOT NULL
 );
 
 CREATE TABLE member_statistics (
@@ -100,8 +94,7 @@ CREATE TABLE member_statistics (
                                     skipped_count INT NOT NULL DEFAULT 0,
                                     total_count INT GENERATED ALWAYS AS (correct_count + incorrect_count + skipped_count) STORED,
                                     created_at TIMESTAMP NOT NULL,
-                                    updated_at TIMESTAMP NOT NULL,
-                                    FOREIGN KEY (member_id) REFERENCES members(id)
+                                    updated_at TIMESTAMP NOT NULL
 );
 
 -- 트랜잭션 완료

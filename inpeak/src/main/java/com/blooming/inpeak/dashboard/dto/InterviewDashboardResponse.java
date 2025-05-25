@@ -1,4 +1,4 @@
-package com.blooming.inpeak.dashborad.dto;
+package com.blooming.inpeak.dashboard.dto;
 
 import com.blooming.inpeak.member.dto.response.MemberLevelResponse;
 import com.blooming.inpeak.answer.dto.response.RecentAnswerResponse;

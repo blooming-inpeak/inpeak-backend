@@ -22,20 +22,20 @@ public class MemberStatistics extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "member_id", nullable = false)
+    @Column(nullable = false)
     private Long memberId;
 
-    @Column(name = "correct_count", nullable = false)
+    @Column(nullable = false)
     private int correctCount;
 
-    @Column(name = "incorrect_count", nullable = false)
+    @Column(nullable = false)
     private int incorrectCount;
 
-    @Column(name = "skipped_count", nullable = false)
+    @Column(nullable = false)
     private int skippedCount;
 
     // total_count는 GENERATED 컬럼이므로 insert/update 하지 않음
-    @Column(name = "total_count", insertable = false, updatable = false)
+    @Column(insertable = false, updatable = false)
     private int totalCount;
 
     @Builder

@@ -1,6 +1,7 @@
 package com.blooming.inpeak.answer.domain;
 
 import com.blooming.inpeak.member.domain.MemberStatistics;
+import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -8,31 +9,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum AnswerStatus {
 
-    CORRECT(10) {
-        @Override
-        public void applyTo(MemberStatistics stats) {
-            stats.increaseCorrect();
-        }
-    },
-    INCORRECT(5) {
-        @Override
-        public void applyTo(MemberStatistics stats) {
-            stats.increaseIncorrect();
-        }
-    },
-    SKIPPED(0) {
-        @Override
-        public void applyTo(MemberStatistics stats) {
-            stats.increaseSkipped();
-        }
-    },
-    ALL(0) {
-        @Override
-        public void applyTo(MemberStatistics stats) {
-        }
-    };
+    CORRECT(10, MemberStatistics::increaseCorrect),
+    INCORRECT(5, MemberStatistics::increaseIncorrect),
+    SKIPPED(0, MemberStatistics::increaseSkipped),
+    ALL(0, stats -> {});
 
     private final int expPoints;
+    private final Consumer<MemberStatistics> action;
 
-    public abstract void applyTo(MemberStatistics stats);
+    public void applyTo(MemberStatistics stats) {
+        action.accept(stats);
+    }
 }
