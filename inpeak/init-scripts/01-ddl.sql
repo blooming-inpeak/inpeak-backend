@@ -92,7 +92,6 @@ CREATE TABLE member_statistics (
                                     correct_count INT NOT NULL DEFAULT 0,
                                     incorrect_count INT NOT NULL DEFAULT 0,
                                     skipped_count INT NOT NULL DEFAULT 0,
-                                    total_count INT GENERATED ALWAYS AS (correct_count + incorrect_count + skipped_count) STORED,
                                     created_at TIMESTAMP NOT NULL,
                                     updated_at TIMESTAMP NOT NULL
 );

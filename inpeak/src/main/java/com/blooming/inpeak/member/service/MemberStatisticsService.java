@@ -20,9 +20,6 @@ public class MemberStatisticsService {
     private final MemberStatisticsRepository memberStatisticsRepository;
     private final AnswerRepository answerRepository;
 
-    private static final int[] LEVEL_EXP_TABLE = {0, 30, 90, 180, 300, 450, 630, 840, 1080, 1350};
-    private static final int MAX_LEVEL = LEVEL_EXP_TABLE.length;
-
     /**
      * 회원 통계 업데이트
      *
@@ -73,34 +70,18 @@ public class MemberStatisticsService {
      * @return 회원의 레벨 정보
      */
     public MemberLevelResponse getMemberLevel(Long memberId) {
-        MemberStatistics stats = memberStatisticsRepository.findByMemberId(memberId)
+        MemberStatistics statistics = memberStatisticsRepository.findByMemberId(memberId)
             .orElseThrow(()-> new NotFoundException("회원 통계 데이터를 찾을 수 없습니다."));
 
-        int exp = calculateExp(stats.getCorrectCount(),
-            stats.getIncorrectCount());
-        int level = calculateLevel(exp);
+        int exp = statistics.calculateExp();
+        int level = statistics.calculateLevel(exp);
 
-        if (level == 0) return MemberLevelResponse.of(0, 0, 0);
+        if (level == 0)
+            return MemberLevelResponse.of(0, 0, 0);
 
-        int currentExp = exp - LEVEL_EXP_TABLE[level - 1];
-        int nextExp = (level == MAX_LEVEL) ?
-            0 : LEVEL_EXP_TABLE[level] - LEVEL_EXP_TABLE[level - 1];
+        int currentExp = statistics.getCurrentExpInLevel(exp, level);
+        int nextExp = statistics.getNextExpInLevel(level);
 
         return MemberLevelResponse.of(level, currentExp, nextExp);
-    }
-
-    private int calculateExp(int correct, int incorrect) {
-        return
-            correct * AnswerStatus.CORRECT.getExpPoints()
-                + incorrect * AnswerStatus.INCORRECT.getExpPoints();
-    }
-
-    private int calculateLevel(int exp) {
-        if (exp == 0) return 0;
-
-        double val = (1 + Math.sqrt(1 + (4.0 * exp / 15.0))) / 2.0;
-        int level = (int) Math.floor(val);
-
-        return Math.min(level, MAX_LEVEL);
     }
 }

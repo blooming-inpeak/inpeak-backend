@@ -15,8 +15,8 @@ public interface MemberStatisticsRepository extends JpaRepository<MemberStatisti
      */
     @Query("""
         SELECT COALESCE(
-            CAST(ms.correctCount * 100 AS INTEGER) / 
-            NULLIF(CAST(ms.correctCount + ms.incorrectCount + ms.skippedCount AS INTEGER), 0),
+            ms.correctCount * 100 /
+            NULLIF(ms.correctCount + ms.incorrectCount + ms.skippedCount, 0),
             0)
         FROM MemberStatistics ms
         WHERE ms.memberId = :memberId
@@ -28,8 +28,8 @@ public interface MemberStatisticsRepository extends JpaRepository<MemberStatisti
      */
     @Query("""
         SELECT COALESCE(
-            CAST(SUM(ms.correctCount) * 100 AS INTEGER) / 
-            NULLIF(CAST(SUM(ms.correctCount + ms.incorrectCount + ms.skippedCount) AS INTEGER), 0),
+            SUM(ms.correctCount) * 100 /
+            NULLIF(SUM(ms.correctCount + ms.incorrectCount + ms.skippedCount), 0),
             0)
         FROM MemberStatistics ms
     """)

@@ -39,7 +39,7 @@ public class LoggingAspect {
             logger.info("[종료] 메서드: {} | 실행 시간: {}ms | 반환값: {}", methodName, elapsedTime, result);
             return result;
         } catch (Exception e) {
-            logger.error("[오류] 메서드: {} | 예외 발생: {}", methodName, e.getMessage(), e);
+            logger.error("[오류] 메서드: {} | 예외 발생: {}", methodName, e.getMessage());
             throw e;
         }
     }

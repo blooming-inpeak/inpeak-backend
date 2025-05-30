@@ -1,5 +1,6 @@
 package com.blooming.inpeak.member.domain;
 
+import com.blooming.inpeak.answer.domain.AnswerStatus;
 import com.blooming.inpeak.common.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,6 +19,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberStatistics extends BaseEntity {
 
+    private static final int[] LEVEL_EXP_TABLE = {0, 30, 90, 180, 300, 450, 630, 840, 1080, 1350};
+    private static final int MAX_LEVEL = LEVEL_EXP_TABLE.length;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,10 +37,6 @@ public class MemberStatistics extends BaseEntity {
 
     @Column(nullable = false)
     private int skippedCount;
-
-    // total_count는 GENERATED 컬럼이므로 insert/update 하지 않음
-    @Column(insertable = false, updatable = false)
-    private int totalCount;
 
     @Builder
     private MemberStatistics(
@@ -60,7 +60,6 @@ public class MemberStatistics extends BaseEntity {
             .build();
     }
 
-    // 통계 수치 증가 메서드
     public void increaseCorrect() {
         this.correctCount++;
     }
@@ -71,5 +70,29 @@ public class MemberStatistics extends BaseEntity {
 
     public void increaseSkipped() {
         this.skippedCount++;
+    }
+
+    public int getTotalCount() { return correctCount + incorrectCount + skippedCount; }
+
+    public int calculateExp() {
+        return correctCount * AnswerStatus.CORRECT.getExpPoints()
+            + incorrectCount * AnswerStatus.INCORRECT.getExpPoints();
+    }
+
+    public int calculateLevel(int exp) {
+        if (exp == 0) return 0;
+
+        double val = (1 + Math.sqrt(1 + (4.0 * exp / 15.0))) / 2.0;
+        int level = (int) Math.floor(val);
+
+        return Math.min(level, MAX_LEVEL);
+    }
+
+    public int getCurrentExpInLevel(int exp, int level) {
+        return (level == 0) ? 0 : exp - LEVEL_EXP_TABLE[level - 1];
+    }
+
+    public int getNextExpInLevel(int level) {
+        return (level == MAX_LEVEL) ? 0 : LEVEL_EXP_TABLE[level] - LEVEL_EXP_TABLE[level - 1];
     }
 }
