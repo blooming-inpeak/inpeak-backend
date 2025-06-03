@@ -3,7 +3,6 @@ package com.blooming.inpeak.member.service;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.service.AnswerVideoCleanupService;
 import com.blooming.inpeak.auth.repository.RefreshTokenRepository;
-import com.blooming.inpeak.common.error.exception.NotFoundException;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
 import com.blooming.inpeak.member.domain.Member;
 import com.blooming.inpeak.member.repository.MemberInterestRepository;
@@ -32,7 +31,7 @@ public class MemberService {
         }
 
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new NotFoundException("존재하지 않는 회원입니다: " + memberId));
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다: " + memberId));
         member.updateNickname(nickName);
 
         return nickName;
@@ -41,7 +40,7 @@ public class MemberService {
     @Transactional
     public void withdrawMember(Long id) {
         Member member = memberRepository.findById(id).orElseThrow(
-            () -> new NotFoundException("존재하지 않는 회원입니다: " + id));
+            () -> new IllegalArgumentException("존재하지 않는 회원입니다: " + id));
 
         answerRepository.deleteByMemberId(id);
         interviewRepository.deleteByMemberId(id);
@@ -53,6 +52,6 @@ public class MemberService {
 
     public Member getMemberInfo(Long id) {
         return memberRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("존재하지 않는 회원입니다: " + id));
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다: " + id));
     }
 }
