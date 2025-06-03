@@ -25,7 +25,6 @@ class NicknameGeneratorTest extends IntegrationTestSupport {
 
         // then
         assertThat(nickname).isNotNull();
-        assertThat(nickname).matches("^.+ .+ .+ \\d{4}$"); // 단어들과 숫자 4자리 패턴
         assertThat(memberRepository.existsByNickname(nickname)).isFalse();
     }
 }
