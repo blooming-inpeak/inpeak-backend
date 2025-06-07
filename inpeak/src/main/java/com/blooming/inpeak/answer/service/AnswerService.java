@@ -14,17 +14,12 @@ import com.blooming.inpeak.answer.dto.response.RecentAnswerResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
 import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
 import com.blooming.inpeak.common.error.exception.ConflictException;
-import com.blooming.inpeak.common.error.exception.EncodingException;
 import com.blooming.inpeak.common.error.exception.ForbiddenException;
 import com.blooming.inpeak.common.error.exception.NotFoundException;
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
-import com.blooming.inpeak.member.service.MemberStatisticsService;
 import com.blooming.inpeak.question.domain.Question;
-import com.blooming.inpeak.question.repository.QuestionRepository;
-import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Base64;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -32,7 +27,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -42,9 +36,8 @@ public class AnswerService {
     private final AnswerRepository answerRepository;
     private final AnswerRepositoryCustom answerRepositoryCustom;
     private final GPTService gptService;
-    private final QuestionRepository questionRepository;
     private final InterviewRepository interviewRepository;
-    private final MemberStatisticsService memberStatisticsService;
+    private final AnswerManagerService answerManagerService;
 
     /**
      * 답변을 스킵하는 메서드
@@ -97,15 +90,15 @@ public class AnswerService {
         List<Answer> answers = answerRepository.findAnswersByMemberAndDate(memberId, date);
 
         if (answers.isEmpty()) {
-            // 🔍 인터뷰는 존재하지만 답변이 없는 케이스 확인을 위해 인터뷰만 따로 조회
-            Interview interview = interviewRepository.findByMemberIdAndStartDate(memberId, date)
+            // 인터뷰는 존재하지만 답변이 없는 케이스 확인을 위해 인터뷰만 따로 조회
+            interviewRepository.findByMemberIdAndStartDate(memberId, date)
                 .orElseThrow(() -> new NotFoundException("해당 날짜에 진행된 인터뷰가 없습니다."));
 
-            // 🔴 인터뷰는 있지만 답변이 없음
+            // 인터뷰는 있지만 답변이 없음
             throw new ConflictException("해당 인터뷰에 대한 답변이 존재하지 않습니다.");
         }
 
-        // ✅ 인터뷰도 있고, 답변도 있음
+        // 인터뷰도 있고, 답변도 있음
         Interview interview = answers.get(0).getInterview(); // answer가 있으므로 get(0) 안전
         return InterviewWithAnswersResponse.from(interview, answers);
     }
@@ -132,33 +125,17 @@ public class AnswerService {
      *
      * @param command 답변 생성 명령
      */
-    @Transactional
     public AnswerIDResponse createAnswer(AnswerCreateCommand command) {
-        if (answerRepository.existsByInterviewIdAndQuestionId(command.interviewId(),
-            command.questionId())) {
-            throw new ConflictException("이미 답변이 존재하는 질문입니다.");
-        }
+        // 유효성 검사 및 질문 조회
+        Question question = answerManagerService.validateAndGetQuestion(command);
 
-        Question question = questionRepository.findById(command.questionId())
-            .orElseThrow(() -> new NotFoundException("해당 질문이 존재하지 않습니다."));
-
+        // GPT 통해서 피드백
         String feedback = gptService.makeGPTResponse(command.audioFile(), question.getContent());
 
-        Answer answer = Answer.of(command, feedback);
-        answerRepository.save(answer);
-
-        // 회원 통계 업데이트
-        memberStatisticsService.updateStatistics(command.memberId(), answer.getStatus());
+        // 답변 생성 및 통계 업데이트
+        Answer answer = answerManagerService.generateAnswer(command, feedback);
 
         return new AnswerIDResponse(answer.getId());
-    }
-
-    private String encodeToBase64(MultipartFile file) {
-        try {
-            return Base64.getEncoder().encodeToString(file.getBytes());
-        } catch (IOException e) {
-            throw new EncodingException("파일 인코딩 실패");
-        }
     }
 
     /**
