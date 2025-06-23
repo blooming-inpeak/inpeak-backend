@@ -94,20 +94,4 @@ class AnswerRepositoryTest extends IntegrationTestSupport {
         assertThat(answers).extracting(Answer::getStatus)
             .containsExactlyInAnyOrder(AnswerStatus.CORRECT, AnswerStatus.INCORRECT, AnswerStatus.SKIPPED);
     }
-
-//    @Test
-//    @DisplayName("특정 멤버의 답변 통계 정보를 조회한다.")
-//    void getUserStats() {
-//        // When: 통계 조회
-//        UserStatsResponse response = answerRepository.getUserStats(memberId);
-//
-//        // Then: 결과 검증
-//        assertThat(response).isNotNull();
-//        assertThat(response.totalAnswerCount()).isEqualTo(3);
-//        assertThat(response.correctAnswerCount()).isEqualTo(1);
-//        assertThat(response.incorrectAnswerCount()).isEqualTo(1);
-//        assertThat(response.skippedAnswerCount()).isEqualTo(1);
-//        assertThat(response.totalInterviewCount()).isEqualTo(1);
-//        assertThat(response.totalRunningTime()).isEqualTo(50);
-//    }
 }

@@ -19,6 +19,7 @@ START TRANSACTION;
 
 -- 테이블 삭제 (의존성 역순)
 DROP TABLE IF EXISTS answers;
+DROP TABLE IF EXISTS answer_tasks;
 DROP TABLE IF EXISTS interviews;
 DROP TABLE IF EXISTS refreshtokens;
 DROP TABLE IF EXISTS member_interests;
@@ -94,6 +95,21 @@ CREATE TABLE member_statistics (
                                     skipped_count INT NOT NULL DEFAULT 0,
                                     created_at TIMESTAMP NOT NULL,
                                     updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE answer_tasks (
+                              id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                              answer_id BIGINT NULL,
+                              question_id BIGINT NOT NULL,
+                              question_content TEXT NOT NULL,
+                              interview_id BIGINT NOT NULL,
+                              member_id BIGINT NOT NULL,
+                              audio_file_url VARCHAR(255) NOT NULL,
+                              video_url VARCHAR(255),
+                              time BIGINT NOT NULL,
+                              status VARCHAR(50) NOT NULL,
+                              created_at TIMESTAMP NOT NULL,
+                              updated_at TIMESTAMP NOT NULL
 );
 
 -- 트랜잭션 완료

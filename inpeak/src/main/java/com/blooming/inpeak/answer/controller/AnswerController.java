@@ -1,25 +1,26 @@
 package com.blooming.inpeak.answer.controller;
 
 import com.blooming.inpeak.answer.domain.AnswerStatus;
-import com.blooming.inpeak.answer.dto.command.AnswerCreateCommand;
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
+import com.blooming.inpeak.answer.dto.request.AnswerCreateRequest;
 import com.blooming.inpeak.answer.dto.request.AnswerSkipRequest;
 import com.blooming.inpeak.answer.dto.request.CommentUpdateRequest;
 import com.blooming.inpeak.answer.dto.request.CorrectAnswerFilterRequest;
 import com.blooming.inpeak.answer.dto.request.IncorrectAnswerFilterRequest;
 import com.blooming.inpeak.answer.dto.request.UnderstoodUpdateRequest;
+import com.blooming.inpeak.answer.dto.response.AnswerByTaskResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerDetailResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerIDResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerPresignedUrlResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
 import com.blooming.inpeak.answer.dto.response.RecentAnswerListResponse;
-import com.blooming.inpeak.answer.service.AnswerPresignedUrlService;
+import com.blooming.inpeak.answer.dto.response.TaskIDResponse;
+import com.blooming.inpeak.answer.service.AnswerAsyncService;
 import com.blooming.inpeak.answer.service.AnswerService;
 import com.blooming.inpeak.member.dto.MemberPrincipal;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/answer")
@@ -38,7 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class AnswerController {
 
     private final AnswerService answerService;
-    private final AnswerPresignedUrlService answerPresignedUrlService;
+    private final AnswerAsyncService answerAsyncService;
 
     @PostMapping("/skip")
     public ResponseEntity<AnswerIDResponse> skipAnswer(
@@ -88,26 +88,20 @@ public class AnswerController {
     public ResponseEntity<AnswerPresignedUrlResponse> getPresignedUrl(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @RequestParam LocalDate startDate,
-        @RequestParam String extension
+        @RequestParam(required = false) String extension,
+        @RequestParam Boolean includeVideo
     ) {
-        return ResponseEntity.ok(
-            answerPresignedUrlService.getPreSignedUrl(memberPrincipal.id(), startDate, extension));
+        return ResponseEntity.ok(answerService.getPresignedUrl(
+            memberPrincipal.id(), startDate, extension, includeVideo));
     }
 
-    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<AnswerIDResponse> createAnswer(
+    @PostMapping("/create")
+    public ResponseEntity<TaskIDResponse> createAnswer(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
-        @RequestParam("audioFile") MultipartFile audioFile,
-        @RequestParam("time") Long time,
-        @RequestParam("questionId") Long questionId,
-        @RequestParam("interviewId") Long interviewId,
-        @RequestParam(value = "videoURL", required = false) String videoURL
+        @RequestBody AnswerCreateRequest request
     ) {
-        AnswerIDResponse response = answerService.createAnswer(
-            AnswerCreateCommand.of(audioFile, time, memberPrincipal.id(),
-                questionId, interviewId, videoURL));
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(answerAsyncService.requestAsyncAnswerCreation(request.toCommand(
+            memberPrincipal.id())));
     }
 
     @PutMapping("/understood")
@@ -115,7 +109,8 @@ public class AnswerController {
         @RequestBody UnderstoodUpdateRequest request,
         @AuthenticationPrincipal MemberPrincipal memberPrincipal
     ) {
-        answerService.updateUnderstood(request.answerId(), request.isUnderstood(), memberPrincipal.id());
+        answerService.updateUnderstood(request.answerId(), request.isUnderstood(),
+            memberPrincipal.id());
         return ResponseEntity.ok().build();
     }
 
@@ -127,15 +122,11 @@ public class AnswerController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping
-    public ResponseEntity<AnswerDetailResponse> getAnswer(
-        @RequestParam Long interviewId,
-        @RequestParam Long questionId,
-        @AuthenticationPrincipal MemberPrincipal memberPrincipal
-    ) {
-        AnswerDetailResponse response = answerService.getAnswer(interviewId, questionId,
-            memberPrincipal.id());
-        return ResponseEntity.ok(response);
+    @GetMapping("/tasks/{taskId}")
+    public ResponseEntity<AnswerByTaskResponse> findAnswerByTaskId(
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
+        @PathVariable Long taskId) {
+        return answerService.findAnswerByTaskId(taskId, memberPrincipal.id());
     }
 
     @GetMapping("/{answerId}")
@@ -145,5 +136,14 @@ public class AnswerController {
     ) {
         AnswerDetailResponse response = answerService.getAnswerById(answerId, memberPrincipal.id());
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/tasks/{taskId}/retry")
+    public ResponseEntity<Void> retryAnswerTask(
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
+        @PathVariable Long taskId
+    ) {
+        answerAsyncService.retryAnswerTask(taskId, memberPrincipal.id());
+        return ResponseEntity.ok().build();
     }
 }

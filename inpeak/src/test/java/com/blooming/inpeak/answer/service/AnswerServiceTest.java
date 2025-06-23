@@ -1,17 +1,20 @@
 package com.blooming.inpeak.answer.service;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.blooming.inpeak.answer.domain.Answer;
 import com.blooming.inpeak.answer.domain.AnswerStatus;
+import com.blooming.inpeak.answer.domain.AnswerTask;
+import com.blooming.inpeak.answer.domain.AnswerTaskStatus;
 import com.blooming.inpeak.answer.dto.command.AnswerFilterCommand;
-import com.blooming.inpeak.answer.dto.response.AnswerDetailResponse;
+import com.blooming.inpeak.answer.dto.response.AnswerByTaskResponse;
 import com.blooming.inpeak.answer.dto.response.AnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.InterviewWithAnswersResponse;
 import com.blooming.inpeak.answer.dto.response.RecentAnswerListResponse;
 import com.blooming.inpeak.answer.dto.response.RecentAnswerResponse;
 import com.blooming.inpeak.answer.repository.AnswerRepository;
-import com.blooming.inpeak.answer.repository.AnswerRepositoryCustom;
+import com.blooming.inpeak.answer.repository.AnswerTaskRepository;
 import com.blooming.inpeak.common.error.exception.NotFoundException;
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
@@ -21,14 +24,15 @@ import com.blooming.inpeak.question.repository.QuestionRepository;
 import com.blooming.inpeak.support.IntegrationTestSupport;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.util.List;
 
 
 class AnswerServiceTest extends IntegrationTestSupport {
@@ -37,7 +41,7 @@ class AnswerServiceTest extends IntegrationTestSupport {
     private AnswerRepository answerRepository;
 
     @Autowired
-    private AnswerRepositoryCustom answerRepositoryCustom;
+    private AnswerTaskRepository answerTaskRepository;
 
     @Autowired
     private QuestionRepository questionRepository;
@@ -310,49 +314,117 @@ class AnswerServiceTest extends IntegrationTestSupport {
 
         // when & then
         assertThatThrownBy(() -> answerService.updateComment(nonExistingId, comment))
-            .isInstanceOf(NotFoundException.class) // ✅ 변경됨
-            .hasMessage("해당 답변이 존재하지 않습니다.");
-    }
-
-
-    @DisplayName("getAnswer()는 interviewId, questionId, memberId로 답변을 조회하면 올바른 응답을 반환해야 한다.")
-    @Transactional
-    @Test
-    void getAnswer_ShouldReturnCorrectAnswer() {
-        // given
-        Long memberId = 1L;
-        Interview interview = interviewRepository.save(Interview.of(memberId, LocalDate.now()));
-        Question question = questionRepository.save(
-            Question.of("Spring의 IoC 컨테이너란?", QuestionType.SPRING, "IoC 컨테이너는 Bean을 관리합니다.")
-        );
-
-        Answer answer = createAnswer(memberId, question.getId(), interview.getId(),
-            "IoC는 제어의 역전", 30L, AnswerStatus.CORRECT, true);
-
-        entityManager.flush();
-        entityManager.clear();
-
-        // when
-        AnswerDetailResponse response = answerService.getAnswer(interview.getId(), question.getId(), memberId);
-
-        // then
-        assertThat(response).isNotNull();
-        assertThat(response.userAnswer()).isEqualTo("IoC는 제어의 역전");
-        assertThat(response.answerStatus()).isEqualTo(AnswerStatus.CORRECT);
-    }
-
-    @DisplayName("getAnswer()는 존재하지 않는 답변이면 NotFoundException을 발생시켜야 한다.")
-    @Transactional
-    @Test
-    void getAnswer_ShouldThrowException_WhenAnswerNotFound() {
-        // given
-        Long fakeInterviewId = 9999L;
-        Long fakeQuestionId = 8888L;
-        Long memberId = 1L;
-
-        // when & then
-        assertThatThrownBy(() -> answerService.getAnswer(fakeInterviewId, fakeQuestionId, memberId))
             .isInstanceOf(NotFoundException.class)
             .hasMessage("해당 답변이 존재하지 않습니다.");
     }
+
+    @DisplayName("findAnswerByTaskId - WAITING 상태일 경우 202 ACCEPTED 반환")
+    @Transactional
+    @Test
+    void findAnswerByTaskId_shouldReturnAccepted_whenStatusIsWaiting() {
+        // given
+        Long memberId = 1L;
+        AnswerTask task = answerTaskRepository.save(
+            AnswerTask.builder()
+                .questionId(1L)
+                .interviewId(1L)
+                .memberId(memberId)
+                .questionContent("질문입니다.")
+                .audioFileUrl("https://example.com/audio.mp3")
+                .time(10L)
+                .status(AnswerTaskStatus.WAITING)
+                .build()
+        );
+
+        // when
+        ResponseEntity<AnswerByTaskResponse> response = answerService.findAnswerByTaskId(task.getId(), memberId);
+
+        // then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(response.getBody().status()).isEqualTo("WAITING");
+    }
+
+    @DisplayName("findAnswerByTaskId - FAILED 상태일 경우 500 반환")
+    @Transactional
+    @Test
+    void findAnswerByTaskId_shouldReturnInternalServerError_whenStatusIsFailed() {
+        // given
+        Long memberId = 1L;
+        AnswerTask task = answerTaskRepository.save(
+            AnswerTask.builder()
+                .questionId(1L)
+                .interviewId(1L)
+                .memberId(memberId)
+                .questionContent("질문입니다.")
+                .audioFileUrl("https://example.com/audio.mp3")
+                .time(10L)
+                .status(AnswerTaskStatus.FAILED)
+                .build()
+        );
+
+        // when
+        ResponseEntity<AnswerByTaskResponse> response = answerService.findAnswerByTaskId(task.getId(), memberId);
+
+        // then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getBody().status()).isEqualTo("FAILED");
+    }
+
+    @DisplayName("findAnswerByTaskId - SUCCESS 상태일 경우 200 OK 반환")
+    @Transactional
+    @Test
+    void findAnswerByTaskId_shouldReturnOk_whenStatusIsSuccess() {
+        // given
+        Long memberId = 1L;
+        Long answerId = 100L;
+
+        AnswerTask task = answerTaskRepository.save(
+            AnswerTask.builder()
+                .questionId(1L)
+                .interviewId(1L)
+                .memberId(memberId)
+                .questionContent("질문입니다.")
+                .audioFileUrl("https://example.com/audio.mp3")
+                .time(10L)
+                .status(AnswerTaskStatus.SUCCESS)
+                .answerId(answerId)
+                .build()
+        );
+
+        // when
+        ResponseEntity<AnswerByTaskResponse> response = answerService.findAnswerByTaskId(task.getId(), memberId);
+
+        // then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().status()).isEqualTo("SUCCESS");
+        assertThat(response.getBody().answerId()).isEqualTo(answerId);
+    }
+
+    @DisplayName("findAnswerByTaskId - 다른 사용자가 요청 시 ForbiddenException 발생")
+    @Transactional
+    @Test
+    void findAnswerByTaskId_shouldThrowForbiddenException_whenUserIdMismatch() {
+        // given
+        Long memberId = 1L;
+        Long otherMemberId = 2L;
+
+        AnswerTask task = answerTaskRepository.save(
+            AnswerTask.builder()
+                .questionId(1L)
+                .interviewId(1L)
+                .memberId(memberId)
+                .questionContent("질문입니다.")
+                .audioFileUrl("https://example.com/audio.mp3")
+                .time(10L)
+                .status(AnswerTaskStatus.SUCCESS)
+                .answerId(123L)
+                .build()
+        );
+
+        // expect
+        assertThatThrownBy(() -> answerService.findAnswerByTaskId(task.getId(), otherMemberId))
+            .isInstanceOf(com.blooming.inpeak.common.error.exception.ForbiddenException.class)
+            .hasMessageContaining("해당 답변에 대한 접근 권한이 없습니다.");
+    }
+
 }

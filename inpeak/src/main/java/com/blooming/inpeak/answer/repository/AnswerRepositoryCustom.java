@@ -59,8 +59,8 @@ public class AnswerRepositoryCustom {
                 answer.isUnderstood
             ))
             .from(answer)
-            .leftJoin(question).on(answer.questionId.eq(question.id)).fetchJoin()
-            .leftJoin(interview).on(answer.interviewId.eq(interview.id)).fetchJoin()
+            .leftJoin(question).on(answer.questionId.eq(question.id))
+            .leftJoin(interview).on(answer.interviewId.eq(interview.id))
             .where(filter)
             .orderBy(orderSpecifier)
             .offset(pageable.getOffset())

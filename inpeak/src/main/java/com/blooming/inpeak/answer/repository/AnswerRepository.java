@@ -53,7 +53,5 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
     @Query(value = "SELECT video_url FROM answers WHERE member_id = :memberId", nativeQuery = true)
     List<String> findAllVideoUrlsByMemberId(@Param("memberId") Long memberId);
 
-    Optional<Answer> findByInterviewIdAndQuestionId(Long interviewId, Long questionId);
-
     boolean existsByInterviewIdAndQuestionId(Long interviewId, Long questionId);
 }

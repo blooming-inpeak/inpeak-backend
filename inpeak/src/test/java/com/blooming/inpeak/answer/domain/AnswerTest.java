@@ -9,15 +9,15 @@ class AnswerTest {
     @DisplayName("스킵된 답변 생성 테스트")
     @Test
     void ofSkipped() {
-        // ✅ Given
+        // Given
         Long memberId = 1L;
         Long questionId = 100L;
         Long interviewId = 200L;
 
-        // ✅ When
+        // When
         Answer skippedAnswer = Answer.ofSkipped(memberId, questionId, interviewId);
 
-        // ✅ Then
+        // Then
         assertThat(skippedAnswer).isNotNull();
         assertThat(skippedAnswer.getQuestionId()).isEqualTo(questionId);
         assertThat(skippedAnswer.getMemberId()).isEqualTo(memberId);

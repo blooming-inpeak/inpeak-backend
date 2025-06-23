@@ -1,33 +1,26 @@
 package com.blooming.inpeak.answer.dto.command;
 
+import com.blooming.inpeak.answer.domain.AnswerTask;
 import lombok.Builder;
-import org.springframework.web.multipart.MultipartFile;
 
 @Builder
 public record AnswerCreateCommand (
-    MultipartFile audioFile,
+    String audioURL,
     Long time,
     Long memberId,
     Long questionId,
     Long interviewId,
     String videoURL
 ){
-    public static AnswerCreateCommand of(
-        MultipartFile audioFile,
-        Long time,
-        Long memberId,
-        Long questionId,
-        Long interviewId,
-        String videoURL
-    ) {
+    public static AnswerCreateCommand from (AnswerTask answerTask) {
         return AnswerCreateCommand
             .builder()
-            .audioFile(audioFile)
-            .time(time)
-            .memberId(memberId)
-            .questionId(questionId)
-            .interviewId(interviewId)
-            .videoURL(videoURL)
+            .audioURL(answerTask.getAudioFileUrl())
+            .time(answerTask.getTime())
+            .memberId(answerTask.getMemberId())
+            .questionId(answerTask.getQuestionId())
+            .interviewId(answerTask.getInterviewId())
+            .videoURL(answerTask.getVideoUrl())
             .build();
     }
 }
