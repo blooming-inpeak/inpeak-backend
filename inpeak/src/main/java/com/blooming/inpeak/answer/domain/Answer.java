@@ -16,6 +16,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -132,7 +133,7 @@ public class Answer extends BaseEntity {
     }
 
     private static String[] splitAndTrimText(String feedback) {
-        return Arrays.stream(feedback.split("@"))
+        return Arrays.stream(feedback.split(Pattern.quote("@$")))
             .map(String::trim) // 각 문자열에 trim 적용
             .toArray(String[]::new);
     }

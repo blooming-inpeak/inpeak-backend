@@ -42,6 +42,13 @@ jobs:
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_OPENAI_YML }}" > ./src/main/resources/application-openai.yml
 
+      - name: Kafka 컨테이너 실행
+        run: docker compose -f docker-compose-kafka.yml up -d
+        working-directory: ./inpeak
+
+      - name: Kafka 시작 대기 (5초)
+        run: sleep 5
+
 
       - name: Gradlew Wrapper 실행 권한 부여
         run: chmod +x gradlew

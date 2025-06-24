@@ -30,8 +30,6 @@ public class AnswerPresignedUrlService {
     private final RestTemplate simpleRestTemplate;
 
     private static final Map<String, String> EXT_TO_CONTENT_TYPE = Map.of(
-        "mp4", "video/mp4",
-        "mov", "video/quicktime",
         "webm", "video/webm",
         "wav", "audio/wav"
     );

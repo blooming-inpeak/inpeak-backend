@@ -18,6 +18,8 @@ import com.blooming.inpeak.answer.repository.AnswerTaskRepository;
 import com.blooming.inpeak.common.error.exception.NotFoundException;
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
+import com.blooming.inpeak.member.domain.MemberStatistics;
+import com.blooming.inpeak.member.repository.MemberStatisticsRepository;
 import com.blooming.inpeak.question.domain.Question;
 import com.blooming.inpeak.question.domain.QuestionType;
 import com.blooming.inpeak.question.repository.QuestionRepository;
@@ -51,6 +53,9 @@ class AnswerServiceTest extends IntegrationTestSupport {
 
     @Autowired
     private AnswerService answerService;
+
+    @Autowired
+    private MemberStatisticsRepository memberStatisticsRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -137,6 +142,8 @@ class AnswerServiceTest extends IntegrationTestSupport {
     @Test
     void skipAnswer_ShouldSaveSkippedAnswer() {
         // given
+        memberStatisticsRepository.save(MemberStatistics.of(memberId));
+
         Long interviewId = interviewRepository.save(Interview.of(memberId, LocalDate.now()))
             .getId();
         Question question = questionRepository.save(
