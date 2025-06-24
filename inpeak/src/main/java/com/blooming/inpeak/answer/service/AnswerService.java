@@ -22,6 +22,7 @@ import com.blooming.inpeak.common.error.exception.ForbiddenException;
 import com.blooming.inpeak.common.error.exception.NotFoundException;
 import com.blooming.inpeak.interview.domain.Interview;
 import com.blooming.inpeak.interview.repository.InterviewRepository;
+import com.blooming.inpeak.member.service.MemberStatisticsService;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class AnswerService {
     private final InterviewRepository interviewRepository;
     private final AnswerPresignedUrlService answerPresignedUrlService;
     private final AnswerTaskRepository answerTaskRepository;
+    private final MemberStatisticsService memberStatisticsService;
 
     /**
      * 답변을 스킵하는 메서드
@@ -59,6 +61,9 @@ public class AnswerService {
 
         Answer skippedAnswer = Answer.ofSkipped(memberId, questionId, interviewId);
         answerRepository.save(skippedAnswer);
+
+        // 회원 통계 업데이트
+        memberStatisticsService.updateStatistics(memberId, skippedAnswer.getStatus());
 
         return new AnswerIDResponse(skippedAnswer.getId());
     }
