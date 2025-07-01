@@ -32,8 +32,6 @@ public record MemberPrincipal(
             .kakaoId(member.getKakaoId())
             .nickname(member.getNickname())
             .provider(member.getProvider())
-            .totalQuestionCount(member.getTotalQuestionCount())
-            .correctAnswerCount(member.getCorrectAnswerCount())
             .authorities(Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")))
             .attributes(attributes)
             .build();
