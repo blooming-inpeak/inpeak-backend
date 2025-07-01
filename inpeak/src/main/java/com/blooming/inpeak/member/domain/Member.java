@@ -30,12 +30,6 @@ public class Member extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String nickname;
 
-    @Column
-    private Long totalQuestionCount;
-
-    @Column
-    private Long correctAnswerCount;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OAuth2Provider provider;
@@ -57,8 +51,6 @@ public class Member extends BaseEntity {
         this.id = id;
         this.kakaoId = kakaoId;
         this.nickname = nickname;
-        this.totalQuestionCount = totalQuestionCount;
-        this.correctAnswerCount = correctAnswerCount;
         this.provider = provider;
         this.registrationStatus =
             registrationStatus != null ? registrationStatus : RegistrationStatus.INITIATED;
